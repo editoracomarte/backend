@@ -1,61 +1,64 @@
-# 🚀 Getting started with Strapi
+# Com Arte — Backend
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+API backend do projeto Com Arte, construída com [Strapi 5](https://strapi.io/) e PostgreSQL.
 
-### `develop`
+## Pré-requisitos
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+- [Docker](https://docs.docker.com/get-docker/) e Docker Compose
 
-```
-npm run develop
-# or
-yarn develop
-```
+## Configuração
 
-### `start`
+1. Copie o arquivo de exemplo e preencha as variáveis:
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
-
-```
-npm run start
-# or
-yarn start
+```bash
+cp .env.example .env
 ```
 
-### `build`
+2. Preencha o `.env`:
 
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
+| Variável | Como obter |
+|---|---|
+| `APP_KEYS` | Gere dois valores separados por vírgula: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` |
+| `API_TOKEN_SALT` | mesmo comando acima |
+| `ADMIN_JWT_SECRET` | mesmo comando acima |
+| `TRANSFER_TOKEN_SALT` | mesmo comando acima |
+| `JWT_SECRET` | mesmo comando acima |
+| `ENCRYPTION_KEY` | mesmo comando acima |
+| `DATABASE_*` | peça ao time as credenciais do banco |
+| `NODE_ENV` | `development` para editar content types, `production` para uso normal |
 
+## Rodando
+
+```bash
+docker compose up
 ```
-npm run build
-# or
-yarn build
+
+O painel admin estará disponível em `http://localhost:1337/admin`.
+
+Para rodar em background:
+
+```bash
+docker compose up -d
+docker compose logs -f   # acompanhar logs
 ```
 
-## ⚙️ Deployment
+Para parar:
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
-
-```
-yarn strapi deploy
+```bash
+docker compose down
 ```
 
-## 📚 Learn more
+## Modos de operação
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
+| `NODE_ENV` | Comportamento |
+|---|---|
+| `production` (padrão) | Edição de content types desabilitada |
+| `development` | Permite criar e editar content types pelo admin |
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
+## Dados persistidos
 
-## ✨ Community
+O banco de dados é mantido no volume Docker `postgres_data` entre restarts. Para resetar completamente:
 
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
-
----
-
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+```bash
+docker compose down -v
+```
