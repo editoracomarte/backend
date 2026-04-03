@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "obras",
+  "info": {
+    "singularName": "obra",
+    "pluralName": "obras",
+    "displayName": "Obra"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "titulo",
+      "required": true
+    },
+    "autoria": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::autor.autor",
+      "mappedBy": "obras"
+    },
+    "descricao": {
+      "type": "blocks"
+    },
+    "isbn": {
+      "type": "string",
+      "required": false,
+      "unique": true,
+      "regex": "^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[0-9- ]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[0-9- ]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$"
+    },
+    "formato": {
+      "type": "string"
+    },
+    "numeroDePaginas": {
+      "type": "integer"
+    },
+    "anoDePublicacao": {
+      "type": "integer"
+    }
+  }
+}
