@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "autores",
+  "info": {
+    "singularName": "autor",
+    "pluralName": "autores",
+    "displayName": "Autor"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nome": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "nome",
+      "required": true
+    },
+    "descricao": {
+      "type": "blocks"
+    },
+    "obras": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::obra.obra",
+      "inversedBy": "autoria"
+    }
+  }
+}
