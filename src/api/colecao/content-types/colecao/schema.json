@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "colecoes",
+  "info": {
+    "singularName": "colecao",
+    "pluralName": "colecoes",
+    "displayName": "Coleção"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nome": {
+      "type": "string",
+      "required": true
+    },
+    "obras": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::obra.obra",
+      "inversedBy": "colecao"
+    },
+    "descricao": {
+      "type": "blocks"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "nome"
+    }
+  }
+}

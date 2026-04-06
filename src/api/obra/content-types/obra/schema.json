@@ -26,6 +26,12 @@
       "target": "api::autor.autor",
       "mappedBy": "obras"
     },
+    "colecao": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::colecao.colecao",
+      "mappedBy": "obras"
+    },
     "descricao": {
       "type": "blocks"
     },
@@ -35,6 +41,11 @@
       "unique": true,
       "regex": "^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[0-9- ]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[0-9- ]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$"
     },
+    "issn": {
+      "type": "string",
+      "unique": true,
+      "regex": "^\\d{4}-\\d{3}[\\dX]$"
+    },
     "formato": {
       "type": "string"
     },
@@ -43,6 +54,12 @@
     },
     "anoDePublicacao": {
       "type": "integer"
+    },
+    "generos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::genero.genero",
+      "mappedBy": "obras"
     }
   }
 }
