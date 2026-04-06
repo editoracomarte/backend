@@ -21,14 +21,17 @@ services:
     environment:
       DATABASE_HOST: postgres  # override the 127.0.0.1 from .env
       NODE_ENV: ${NODE_ENV:-production}
+      STRAPI_IMPORT_ENCRYPTION_KEY: ${STRAPI_IMPORT_ENCRYPTION_KEY}
     ports:
       - "${PORT:-1337}:1337"
     volumes:
       - .:/app
       - /app/node_modules
+      - strapi_seed:/strapi-seed
     depends_on:
       postgres:
         condition: service_healthy
 
 volumes:
   postgres_data:
+  strapi_seed:
