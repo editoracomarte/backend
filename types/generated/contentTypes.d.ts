@@ -458,6 +458,69 @@ export interface ApiAutorAutor extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiColecaoColecao extends Struct.CollectionTypeSchema {
+  collectionName: 'colecoes';
+  info: {
+    displayName: 'Cole\u00E7\u00E3o';
+    pluralName: 'colecoes';
+    singularName: 'colecao';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    descricao: Schema.Attribute.Blocks;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::colecao.colecao'
+    > &
+      Schema.Attribute.Private;
+    nome: Schema.Attribute.String & Schema.Attribute.Required;
+    obras: Schema.Attribute.Relation<'manyToMany', 'api::obra.obra'>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'nome'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiGeneroGenero extends Struct.CollectionTypeSchema {
+  collectionName: 'generos';
+  info: {
+    displayName: 'G\u00EAnero';
+    pluralName: 'generos';
+    singularName: 'genero';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::genero.genero'
+    > &
+      Schema.Attribute.Private;
+    nome: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    obras: Schema.Attribute.Relation<'manyToMany', 'api::obra.obra'>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'nome'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiObraObra extends Struct.CollectionTypeSchema {
   collectionName: 'obras';
   info: {
@@ -471,12 +534,15 @@ export interface ApiObraObra extends Struct.CollectionTypeSchema {
   attributes: {
     anoDePublicacao: Schema.Attribute.Integer;
     autoria: Schema.Attribute.Relation<'manyToMany', 'api::autor.autor'>;
+    colecao: Schema.Attribute.Relation<'manyToMany', 'api::colecao.colecao'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     descricao: Schema.Attribute.Blocks;
     formato: Schema.Attribute.String;
+    generos: Schema.Attribute.Relation<'manyToMany', 'api::genero.genero'>;
     isbn: Schema.Attribute.String & Schema.Attribute.Unique;
+    issn: Schema.Attribute.String & Schema.Attribute.Unique;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::obra.obra'> &
       Schema.Attribute.Private;
@@ -1002,6 +1068,8 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::autor.autor': ApiAutorAutor;
+      'api::colecao.colecao': ApiColecaoColecao;
+      'api::genero.genero': ApiGeneroGenero;
       'api::obra.obra': ApiObraObra;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

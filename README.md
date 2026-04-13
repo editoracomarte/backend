@@ -26,6 +26,7 @@ cp .env.example .env
 | `ENCRYPTION_KEY` | mesmo comando acima |
 | `DATABASE_*` | peça ao time as credenciais do banco |
 | `NODE_ENV` | `development` para editar content types, `production` para uso normal |
+| `STRAPI_IMPORT_ENCRYPTION_KEY` | chave usada para decriptar o arquivo de seed — peça ao time |
 
 ## Rodando
 
@@ -54,6 +55,42 @@ docker compose down
 |---|---|
 | `production` (padrão) | Edição de content types desabilitada |
 | `development` | Permite criar e editar content types pelo admin |
+
+## Content types
+
+| Tipo | Rota base |
+|---|---|
+| `colecao` | `/api/colecaos` |
+| `genero` | `/api/generos` |
+| `obra` | `/api/obras` |
+
+## Populando o banco com dados iniciais
+
+O backend importa automaticamente os dados na primeira vez que sobe, caso o arquivo de seed esteja presente em `seed/`.
+
+1. Coloque o arquivo `.tar.gz.enc` dentro da pasta `seed/`:
+
+```
+seed/
+└── strapi-export.tar.gz.enc
+```
+
+2. Certifique-se que `STRAPI_IMPORT_ENCRYPTION_KEY` está preenchida no `.env`.
+
+3. Suba normalmente:
+
+```bash
+docker compose up
+```
+
+O import roda automaticamente antes do Strapi iniciar. Nas próximas subidas ele é ignorado.
+
+Para reimportar (ex: novo arquivo de seed), remova o marcador e reinicie:
+
+```bash
+docker compose exec strapi rm /app/.seeded
+docker compose restart strapi
+```
 
 ## Dados persistidos
 

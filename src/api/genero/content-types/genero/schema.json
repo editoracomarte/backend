@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "generos",
+  "info": {
+    "singularName": "genero",
+    "pluralName": "generos",
+    "displayName": "Gênero"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nome": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "obras": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::obra.obra",
+      "inversedBy": "generos"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "nome"
+    }
+  }
+}
