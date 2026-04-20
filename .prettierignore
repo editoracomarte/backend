@@ -1,0 +1,10 @@
+dist/
+.strapi/
+.cache/
+.tmp/
+node_modules/
+public/
+src/admin/
+src/plugins/
+*.log
+package-lock.json

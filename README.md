@@ -16,17 +16,17 @@ cp .env.example .env
 
 2. Preencha o `.env`:
 
-| Variável | Como obter |
-|---|---|
-| `APP_KEYS` | Gere dois valores separados por vírgula: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` |
-| `API_TOKEN_SALT` | mesmo comando acima |
-| `ADMIN_JWT_SECRET` | mesmo comando acima |
-| `TRANSFER_TOKEN_SALT` | mesmo comando acima |
-| `JWT_SECRET` | mesmo comando acima |
-| `ENCRYPTION_KEY` | mesmo comando acima |
-| `DATABASE_*` | peça ao time as credenciais do banco |
-| `NODE_ENV` | `development` para editar content types, `production` para uso normal |
-| `STRAPI_IMPORT_ENCRYPTION_KEY` | chave usada para decriptar o arquivo de seed — peça ao time |
+| Variável                       | Como obter                                                                                                             |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `APP_KEYS`                     | Gere dois valores separados por vírgula: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` |
+| `API_TOKEN_SALT`               | mesmo comando acima                                                                                                    |
+| `ADMIN_JWT_SECRET`             | mesmo comando acima                                                                                                    |
+| `TRANSFER_TOKEN_SALT`          | mesmo comando acima                                                                                                    |
+| `JWT_SECRET`                   | mesmo comando acima                                                                                                    |
+| `ENCRYPTION_KEY`               | mesmo comando acima                                                                                                    |
+| `DATABASE_*`                   | peça ao time as credenciais do banco                                                                                   |
+| `NODE_ENV`                     | `development` para editar content types, `production` para uso normal                                                  |
+| `STRAPI_IMPORT_ENCRYPTION_KEY` | chave usada para decriptar o arquivo de seed — peça ao time                                                            |
 
 ## Rodando
 
@@ -51,18 +51,18 @@ docker compose down
 
 ## Modos de operação
 
-| `NODE_ENV` | Comportamento |
-|---|---|
-| `production` (padrão) | Edição de content types desabilitada |
-| `development` | Permite criar e editar content types pelo admin |
+| `NODE_ENV`            | Comportamento                                   |
+| --------------------- | ----------------------------------------------- |
+| `production` (padrão) | Edição de content types desabilitada            |
+| `development`         | Permite criar e editar content types pelo admin |
 
 ## Content types
 
-| Tipo | Rota base |
-|---|---|
+| Tipo      | Rota base       |
+| --------- | --------------- |
 | `colecao` | `/api/colecaos` |
-| `genero` | `/api/generos` |
-| `obra` | `/api/obras` |
+| `genero`  | `/api/generos`  |
+| `obra`    | `/api/obras`    |
 
 ## Populando o banco com dados iniciais
 
@@ -91,6 +91,18 @@ Para reimportar (ex: novo arquivo de seed), remova o marcador e reinicie:
 docker compose exec strapi rm /app/.seeded
 docker compose restart strapi
 ```
+
+## Qualidade de código
+
+| Comando                | O que faz                                |
+| ---------------------- | ---------------------------------------- |
+| `npm run lint`         | Verifica erros de lint (ESLint)          |
+| `npm run lint:fix`     | Corrige automaticamente erros de lint    |
+| `npm run format`       | Formata o código (Prettier)              |
+| `npm run format:check` | Verifica formatação sem alterar arquivos |
+| `npm run fix`          | Corrige lint e formatação de uma vez     |
+
+Use `npm run fix` antes de abrir um PR para garantir que o código está limpo. Em CI, use `npm run lint` e `npm run format:check` para apenas verificar sem alterar arquivos.
 
 ## Dados persistidos
 
