@@ -92,6 +92,18 @@ docker compose exec strapi rm /app/.seeded
 docker compose restart strapi
 ```
 
+## Qualidade de código
+
+| Comando                | O que faz                                |
+| ---------------------- | ---------------------------------------- |
+| `npm run lint`         | Verifica erros de lint (ESLint)          |
+| `npm run lint:fix`     | Corrige automaticamente erros de lint    |
+| `npm run format`       | Formata o código (Prettier)              |
+| `npm run format:check` | Verifica formatação sem alterar arquivos |
+| `npm run fix`          | Corrige lint e formatação de uma vez     |
+
+Use `npm run fix` antes de abrir um PR para garantir que o código está limpo. Em CI, use `npm run lint` e `npm run format:check` para apenas verificar sem alterar arquivos.
+
 ## Dados persistidos
 
 O banco de dados é mantido no volume Docker `postgres_data` entre restarts. Para resetar completamente:
