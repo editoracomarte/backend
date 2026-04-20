@@ -15,6 +15,7 @@ export default tseslint.config(
       'public/**',
       'src/admin/**',
       'src/plugins/**',
+      'types/generated/**',
       '**/*.test.*',
       '**/*.spec.*',
     ],
@@ -31,7 +32,7 @@ export default tseslint.config(
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-empty-function': 'warn',
+      '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-require-imports': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -41,5 +42,5 @@ export default tseslint.config(
   },
 
   // Prettier DEVE ser o último — desativa regras de formatação do ESLint
-  prettierConfig,
+  prettierConfig
 );
