@@ -92,6 +92,24 @@ docker compose exec strapi rm /app/.seeded
 docker compose restart strapi
 ```
 
+## Gerando um novo export do Strapi
+
+Para criar um novo arquivo de backup/seed (substitui o export atual), execute com o container em execução:
+
+1. Descubra o ID do container Strapi:
+
+```bash
+docker ps
+```
+
+2. Execute o export, substituindo `<STRAPI_IMPORT_ENCRYPTION_KEY>` e `<container-id>` pelo ID encontrado:
+
+```bash
+docker exec <container-id> npm run strapi export -- --file seed/strapi-export --key <STRAPI_IMPORT_ENCRYPTION_KEY>
+```
+
+O arquivo gerado ficará em `seed/strapi-export.tar.gz.enc`, substituindo o export anterior.
+
 ## Qualidade de código
 
 | Comando                | O que faz                                |
