@@ -122,6 +122,17 @@ O arquivo gerado ficará em `seed/strapi-export.tar.gz.enc`, substituindo o expo
 
 Use `npm run fix` antes de abrir um PR para garantir que o código está limpo. Em CI, use `npm run lint` e `npm run format:check` para apenas verificar sem alterar arquivos.
 
+## Testes
+
+A suíte tem testes unitários puros (`tests/unit/`) — validações que não dependem do Strapi (ex: regex de ISBN/ISSN do schema da `obra`).
+
+| Comando                 | O que faz                             |
+| ----------------------- | ------------------------------------- |
+| `npm test`              | Roda toda a suíte                     |
+| `npm run test:unit`     | Só os testes unitários (mesmo escopo) |
+| `npm run test:watch`    | Modo watch para desenvolvimento       |
+| `npm run test:coverage` | Roda com relatório de cobertura       |
+
 ## Dados persistidos
 
 O banco de dados é mantido no volume Docker `postgres_data` entre restarts. Para resetar completamente:
