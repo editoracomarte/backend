@@ -8,6 +8,7 @@ const config: Config = {
   globalSetup: '<rootDir>/tests/helpers/global-setup.ts',
   globalTeardown: '<rootDir>/tests/helpers/global-teardown.ts',
   testTimeout: 30000,
+  verbose: true,
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/admin/**', '!src/**/*.d.ts'],
 };
 
