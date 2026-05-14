@@ -124,14 +124,20 @@ Use `npm run fix` antes de abrir um PR para garantir que o código está limpo. 
 
 ## Testes
 
-A suíte tem testes unitários puros (`tests/unit/`) — validações que não dependem do Strapi (ex: regex de ISBN/ISSN do schema da `obra`).
+A suíte de testes tem duas camadas:
 
-| Comando                 | O que faz                             |
-| ----------------------- | ------------------------------------- |
-| `npm test`              | Roda toda a suíte                     |
-| `npm run test:unit`     | Só os testes unitários (mesmo escopo) |
-| `npm run test:watch`    | Modo watch para desenvolvimento       |
-| `npm run test:coverage` | Roda com relatório de cobertura       |
+- **Testes unitários** (`tests/unit/`) — validações puras que não dependem do Strapi (ex: regex de ISBN/ISSN do schema da `obra`). Rodam em milissegundos, sem subir nada.
+- **Testes de integração** (`tests/integration/`) — sobem uma instância do Strapi com banco SQLite descartável e exercitam os endpoints REST gerados (CRUD, validações, relações `manyToMany`, draft/publish). Cada arquivo cobre um content type.
+
+| Comando                    | O que faz                                                 |
+| -------------------------- | --------------------------------------------------------- |
+| `npm test`                 | Roda toda a suíte (unit + integration)                    |
+| `npm run test:unit`        | Só os testes unitários (rápido, sem boot do Strapi)       |
+| `npm run test:integration` | Só os testes de integração (sobe Strapi com SQLite local) |
+| `npm run test:watch`       | Modo watch para desenvolvimento                           |
+| `npm run test:coverage`    | Roda com relatório de cobertura                           |
+
+Os testes de integração usam um SQLite em `.tmp/test.db` (descartado a cada run) — não precisam do Postgres rodando.
 
 ## Dados persistidos
 
