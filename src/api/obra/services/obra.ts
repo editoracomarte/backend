@@ -18,6 +18,7 @@ export default factories.createCoreService('api::obra.obra', ({ strapi }) => ({
     const allObras = await strapi.documents('api::obra.obra').findMany({
       status: 'published',
       sort: 'anoDePublicacao:desc',
+      fields: ['titulo', 'slug', 'anoDePublicacao'],
     });
 
     const recent = allObras.slice(0, 6);

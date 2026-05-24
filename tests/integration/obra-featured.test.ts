@@ -67,4 +67,18 @@ describe('GET /api/obras/featured', () => {
 
     expect(res.body.data).toHaveLength(5);
   });
+
+  it('returns only id, documentId, titulo, slug and anoDePublicacao', async () => {
+    await createAndPublishObra('Unica', 2024);
+
+    const res = await request(strapi.server.httpServer).get('/api/obras/featured').expect(200);
+
+    expect(res.body.data[0]).toEqual({
+      id: expect.any(Number),
+      documentId: expect.any(String),
+      titulo: 'Unica',
+      slug: 'unica',
+      anoDePublicacao: 2024,
+    });
+  });
 });
