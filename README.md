@@ -31,7 +31,7 @@ cp .env.example .env
 ## Rodando
 
 ```bash
-docker compose up
+npm run dev
 ```
 
 O painel admin estará disponível em `http://localhost:1337/admin`.
@@ -39,7 +39,7 @@ O painel admin estará disponível em `http://localhost:1337/admin`.
 Para rodar em background:
 
 ```bash
-docker compose up -d
+npm run dev -- -d
 docker compose logs -f   # acompanhar logs
 ```
 
@@ -80,7 +80,7 @@ seed/
 3. Suba normalmente:
 
 ```bash
-docker compose up
+npm run dev
 ```
 
 O import roda automaticamente antes do Strapi iniciar. Nas próximas subidas ele é ignorado.
