@@ -1,0 +1,23 @@
+{
+  "kind": "singleType",
+  "collectionName": "instagrams",
+  "info": {
+    "singularName": "instagram",
+    "pluralName": "instagrams",
+    "displayName": "Instagram"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Postagem": {
+      "type": "component",
+      "component": "midia.url",
+      "repeatable": true,
+      "required": true,
+      "min": 3,
+      "max": 3
+    }
+  }
+}
