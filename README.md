@@ -58,11 +58,14 @@ docker compose down
 
 ## Content types
 
-| Tipo      | Rota base       |
-| --------- | --------------- |
-| `colecao` | `/api/colecaos` |
-| `genero`  | `/api/generos`  |
-| `obra`    | `/api/obras`    |
+| Tipo                      | Rota base        |
+| ------------------------- | ---------------- |
+| `colecao`                 | `/api/colecaos`  |
+| `genero`                  | `/api/generos`   |
+| `obra`                    | `/api/obras`     |
+| `instagram` (single type) | `/api/instagram` |
+
+O single type `instagram` expõe um campo `Postagem` repetível com **exatamente 3 itens** do componente `midia.url` (`url` obrigatório e único, `rotulo` opcional).
 
 ## Populando o banco com dados iniciais
 

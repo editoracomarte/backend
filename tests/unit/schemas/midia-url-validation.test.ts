@@ -9,8 +9,6 @@ describe('midia.url component schema', () => {
 
   it('should declare rotulo as an optional string', () => {
     expect(urlComponent.attributes.rotulo.type).toBe('string');
-    expect(
-      (urlComponent.attributes.rotulo as { required?: boolean }).required
-    ).toBeUndefined();
+    expect((urlComponent.attributes.rotulo as { required?: boolean }).required).toBeUndefined();
   });
 });
