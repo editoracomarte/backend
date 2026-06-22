@@ -13,4 +13,4 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "develop"]
