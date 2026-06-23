@@ -11,7 +11,7 @@
       "required": true,
       "unique": true
     },
-    "rotulo": {
+    "label": {
       "type": "string"
     }
   },

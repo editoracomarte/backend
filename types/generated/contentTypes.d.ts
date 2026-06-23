@@ -480,7 +480,7 @@ export interface ApiInstagramInstagram extends Struct.SingleTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::instagram.instagram'> &
       Schema.Attribute.Private;
-    Postagem: Schema.Attribute.Component<'midia.url', true> &
+    posts: Schema.Attribute.Component<'midia.url', true> &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
         {

@@ -7,7 +7,7 @@ export interface MidiaUrl extends Struct.ComponentSchema {
     icon: 'cursor';
   };
   attributes: {
-    rotulo: Schema.Attribute.String;
+    label: Schema.Attribute.String;
     url: Schema.Attribute.String & Schema.Attribute.Required & Schema.Attribute.Unique;
   };
 }
