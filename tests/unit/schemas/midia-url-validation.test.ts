@@ -7,8 +7,8 @@ describe('midia.url component schema', () => {
     expect(urlComponent.attributes.url.unique).toBe(true);
   });
 
-  it('should declare rotulo as an optional string', () => {
-    expect(urlComponent.attributes.rotulo.type).toBe('string');
-    expect((urlComponent.attributes.rotulo as { required?: boolean }).required).toBeUndefined();
+  it('should declare label as an optional string', () => {
+    expect(urlComponent.attributes.label.type).toBe('string');
+    expect((urlComponent.attributes.label as { required?: boolean }).required).toBeUndefined();
   });
 });

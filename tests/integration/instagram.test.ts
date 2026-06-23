@@ -20,9 +20,9 @@ describe('Instagram public API', () => {
     await strapi.db.connection('components_midia_urls').delete();
   });
 
-  const validPostagens = [
-    { url: 'https://instagram.com/p/1', rotulo: 'Post 1' },
-    { url: 'https://instagram.com/p/2', rotulo: 'Post 2' },
+  const validPosts = [
+    { url: 'https://instagram.com/p/1', label: 'Post 1' },
+    { url: 'https://instagram.com/p/2', label: 'Post 2' },
     { url: 'https://instagram.com/p/3' },
   ];
 
@@ -31,47 +31,47 @@ describe('Instagram public API', () => {
     expect(res.status).toBe(404);
   });
 
-  it('should expose the singleType with its 3 postagens once published', async () => {
+  it('should expose the singleType with its 3 posts once published', async () => {
     await strapi.documents('api::instagram.instagram').create({
-      data: { Postagem: validPostagens },
+      data: { posts: validPosts },
       status: 'published',
     });
 
-    const res = await request(strapi.server.httpServer).get('/api/instagram?populate=Postagem');
+    const res = await request(strapi.server.httpServer).get('/api/instagram?populate=posts');
     expect(res.status).toBe(200);
-    expect(res.body.data.Postagem).toHaveLength(3);
-    expect(res.body.data.Postagem[0].url).toBe('https://instagram.com/p/1');
+    expect(res.body.data.posts).toHaveLength(3);
+    expect(res.body.data.posts[0].url).toBe('https://instagram.com/p/1');
   });
 
-  it('should reject publishing with fewer than 3 postagens', async () => {
+  it('should reject publishing with fewer than 3 posts', async () => {
     await expect(
       strapi.documents('api::instagram.instagram').create({
-        data: { Postagem: validPostagens.slice(0, 2) },
+        data: { posts: validPosts.slice(0, 2) },
         status: 'published',
       })
     ).rejects.toThrow();
   });
 
-  it('should reject publishing with more than 3 postagens', async () => {
+  it('should reject publishing with more than 3 posts', async () => {
     await expect(
       strapi.documents('api::instagram.instagram').create({
         data: {
-          Postagem: [...validPostagens, { url: 'https://instagram.com/p/4' }],
+          posts: [...validPosts, { url: 'https://instagram.com/p/4' }],
         },
         status: 'published',
       })
     ).rejects.toThrow();
   });
 
-  it('should reject publishing when a postagem omits url', async () => {
+  it('should reject publishing when a post omits url', async () => {
     await expect(
       strapi.documents('api::instagram.instagram').create({
         data: {
-          Postagem: [
+          posts: [
             { url: 'https://instagram.com/p/1' },
             { url: 'https://instagram.com/p/2' },
             // @ts-expect-error — intentionally omitting required field
-            { rotulo: 'sem url' },
+            { label: 'sem url' },
           ],
         },
         status: 'published',
@@ -79,11 +79,11 @@ describe('Instagram public API', () => {
     ).rejects.toThrow();
   });
 
-  it('should reject publishing when two postagens share the same url', async () => {
+  it('should reject publishing when two posts share the same url', async () => {
     await expect(
       strapi.documents('api::instagram.instagram').create({
         data: {
-          Postagem: [
+          posts: [
             { url: 'https://instagram.com/p/dup' },
             { url: 'https://instagram.com/p/dup' },
             { url: 'https://instagram.com/p/3' },
@@ -94,10 +94,10 @@ describe('Instagram public API', () => {
     ).rejects.toThrow();
   });
 
-  it('should accept postagens without rotulo (optional field)', async () => {
+  it('should accept posts without label (optional field)', async () => {
     const created = await strapi.documents('api::instagram.instagram').create({
       data: {
-        Postagem: [
+        posts: [
           { url: 'https://instagram.com/p/a' },
           { url: 'https://instagram.com/p/b' },
           { url: 'https://instagram.com/p/c' },

@@ -6,13 +6,13 @@ describe('Instagram schema', () => {
     expect(instagramSchema.options.draftAndPublish).toBe(true);
   });
 
-  it('should require exactly 3 Postagem components of type midia.url', () => {
-    const postagem = instagramSchema.attributes.Postagem;
-    expect(postagem.type).toBe('component');
-    expect(postagem.component).toBe('midia.url');
-    expect(postagem.repeatable).toBe(true);
-    expect(postagem.required).toBe(true);
-    expect(postagem.min).toBe(3);
-    expect(postagem.max).toBe(3);
+  it('should require exactly 3 posts components of type midia.url', () => {
+    const posts = instagramSchema.attributes.posts;
+    expect(posts.type).toBe('component');
+    expect(posts.component).toBe('midia.url');
+    expect(posts.repeatable).toBe(true);
+    expect(posts.required).toBe(true);
+    expect(posts.min).toBe(3);
+    expect(posts.max).toBe(3);
   });
 });
