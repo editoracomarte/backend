@@ -464,6 +464,37 @@ export interface ApiGeneroGenero extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiInstagramInstagram extends Struct.SingleTypeSchema {
+  collectionName: 'instagrams';
+  info: {
+    displayName: 'Instagram';
+    pluralName: 'instagrams';
+    singularName: 'instagram';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::instagram.instagram'> &
+      Schema.Attribute.Private;
+    posts: Schema.Attribute.Component<'midia.url', true> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 3;
+          min: 3;
+        },
+        number
+      >;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+  };
+}
+
 export interface ApiObraObra extends Struct.CollectionTypeSchema {
   collectionName: 'obras';
   info: {
@@ -929,6 +960,7 @@ declare module '@strapi/strapi' {
       'api::autor.autor': ApiAutorAutor;
       'api::colecao.colecao': ApiColecaoColecao;
       'api::genero.genero': ApiGeneroGenero;
+      'api::instagram.instagram': ApiInstagramInstagram;
       'api::obra.obra': ApiObraObra;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

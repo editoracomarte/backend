@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_midia_urls",
+  "info": {
+    "displayName": "URL",
+    "icon": "cursor"
+  },
+  "options": {},
+  "attributes": {
+    "url": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "label": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}
