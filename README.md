@@ -67,6 +67,26 @@ docker compose down
 
 O single type `instagram` expõe um campo `Postagem` repetível com **exatamente 3 itens** do componente `midia.url` (`url` obrigatório e único, `rotulo` opcional).
 
+## Rotas customizadas
+
+Além das rotas CRUD geradas automaticamente pelo Strapi, existem rotas customizadas adicionadas sobre os content types existentes.
+
+### `GET /api/obras/featured`
+
+Retorna uma seleção curada de até 12 obras publicadas para exibição em destaque, combinando as mais recentes (por `anoDePublicacao`) com uma parcela aleatória, embaralhadas antes de retornar.
+
+**Seleção:**
+
+- até 6 obras mais recentes (ordenadas por `anoDePublicacao` decrescente)
+- até 6 obras aleatórias entre as restantes
+- resultado final embaralhado (Fisher-Yates), para que a mesma obra não fique sempre no topo
+
+**Exemplo:**
+
+```bash
+curl http://localhost:1337/api/obras/featured
+```
+
 ## Populando o banco com dados iniciais
 
 O backend importa automaticamente os dados na primeira vez que sobe, caso o arquivo de seed esteja presente em `seed/`.
