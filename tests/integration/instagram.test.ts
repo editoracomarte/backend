@@ -57,7 +57,7 @@ describe('Instagram public API', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.posts).toHaveLength(3);
       expect(res.body.data.posts[0].url).toBe('https://www.instagram.com/p/AAA/');
-      expect(res.body.data.posts[0].label).toBeNull();
+      expect(res.body.data.posts[0]).not.toHaveProperty('label');
     });
 
     it('should serve from cache without hitting RapidAPI again', async () => {

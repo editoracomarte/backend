@@ -8,7 +8,7 @@ const RAPIDAPI_HOST = 'instagram-looter2.p.rapidapi.com';
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12h
 const FETCH_TIMEOUT_MS = 5000;
 
-type Post = { url: string; label: string | null };
+type Post = { url: string };
 type CacheValue = { posts: Post[]; fetchedAt: string };
 
 type RapidApiFeed = {
@@ -25,7 +25,7 @@ export default factories.createCoreService('api::instagram.instagram', ({ strapi
   async getPosts(): Promise<Post[]> {
     const store = strapi.store({ type: 'plugin', name: 'instagram' });
 
-    // 1. Cache fresco (<24h)?
+    // 1. Cache fresco (<12h)?
     const cached = (await store.get({ key: 'feed' })) as CacheValue | null;
     if (cached && Date.now() - new Date(cached.fetchedAt).getTime() < CACHE_TTL_MS) {
       return cached.posts;
@@ -82,7 +82,6 @@ export default factories.createCoreService('api::instagram.instagram', ({ strapi
       .filter((shortcode): shortcode is string => typeof shortcode === 'string')
       .map((shortcode) => ({
         url: `https://www.instagram.com/p/${shortcode}/`,
-        label: null,
       }));
   },
 
@@ -91,7 +90,7 @@ export default factories.createCoreService('api::instagram.instagram', ({ strapi
       .documents('api::instagram.instagram')
       .findFirst({ populate: ['posts'] });
 
-    const posts = (entry?.posts ?? []) as Array<{ url: string; label?: string | null }>;
-    return posts.map((p) => ({ url: p.url, label: p.label ?? null }));
+    const posts = (entry?.posts ?? []) as Array<{ url: string }>;
+    return posts.map((p) => ({ url: p.url }));
   },
 }));
