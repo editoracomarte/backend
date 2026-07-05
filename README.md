@@ -87,6 +87,37 @@ Retorna uma seleção curada de até 12 obras publicadas para exibição em dest
 curl http://localhost:1337/api/obras/featured
 ```
 
+### `GET /api/author/:slug`
+
+Retorna os detalhes de um autor publicado a partir da sua `slug`, com um payload enxuto: apenas `nome`, `descricao` (RichText) e a lista de obras do autor com `titulo` e `slug`.
+
+**Autenticação:** rota **não pública** — exige um API token no header `Authorization: Bearer <token>`. Um token **read-only** já é suficiente: a rota declara `config.auth.scope` como uma action de leitura (`api::autor.autor.find`), o que a strategy de api-token do Strapi libera para tokens read-only. Requisições sem token recebem `401/403`.
+
+**Comportamento:**
+
+- busca pela `slug` (campo `uid` único), não pelo `documentId`
+- retorna somente conteúdo **publicado**; `404` se a slug não existir ou for apenas rascunho
+- as obras vêm populadas com `titulo` e `slug` (campos fora desse escopo não são expostos)
+
+**Resposta:**
+
+```json
+{
+  "data": {
+    "nome": "Machado de Assis",
+    "descricao": [{ "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }],
+    "obras": [{ "titulo": "Dom Casmurro", "slug": "dom-casmurro" }]
+  }
+}
+```
+
+**Exemplo:**
+
+```bash
+curl http://localhost:1337/api/author/machado-de-assis \
+  -H "Authorization: Bearer <api-token>"
+```
+
 ## Populando o banco com dados iniciais
 
 O backend importa automaticamente os dados na primeira vez que sobe, caso o arquivo de seed esteja presente em `seed/`.
