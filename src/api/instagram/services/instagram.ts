@@ -5,7 +5,7 @@
 import { factories } from '@strapi/strapi';
 
 const RAPIDAPI_HOST = 'instagram-looter2.p.rapidapi.com';
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12h
 const FETCH_TIMEOUT_MS = 5000;
 
 type Post = { url: string; label: string | null };
