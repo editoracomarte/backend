@@ -11,9 +11,6 @@ export default {
       config: {
         policies: [],
         middlewares: [],
-        auth: {
-          scope: ['api::autor.autor.find'],
-        },
       },
     },
   ],

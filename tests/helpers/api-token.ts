@@ -1,20 +1,24 @@
 import type { Core } from '@strapi/strapi';
 
 /**
- * Creates a read-only API token and returns its plaintext accessKey. Use it in
- * the `Authorization: Bearer <token>` header to reach authenticated (non-public)
- * read routes in integration tests.
+ * Creates an API token scoped to the given content-api actions and returns its
+ * plaintext accessKey. Use it in the `Authorization: Bearer <token>` header to
+ * reach authenticated (non-public) content-api routes in integration tests.
  *
- * A read-only token grants any route whose `config.auth.scope` ends with `find`
- * or `findOne`. Custom read routes must therefore declare such a scope to be
- * reachable by read-only tokens (see `routes/01-custom-autor.ts`).
+ * Note: a `read-only` token only covers actions whose scope ends with
+ * `find`/`findOne`, so custom actions (e.g. `findOneBySlug`) must be granted via
+ * a `custom` token that lists the exact action UID.
  */
-export async function createReadOnlyToken(strapi: Core.Strapi): Promise<string> {
+export async function createScopedToken(
+  strapi: Core.Strapi,
+  permissions: string[]
+): Promise<string> {
   const token = await strapi.service('admin::api-token').create({
     name: `test-token-${Date.now()}`,
     description: 'Integration test token',
-    type: 'read-only',
+    type: 'custom',
     lifespan: null,
+    permissions,
   });
 
   return token.accessKey;

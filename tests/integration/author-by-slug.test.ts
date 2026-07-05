@@ -1,7 +1,8 @@
 import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
-import { createReadOnlyToken } from '../helpers/api-token';
+import { createScopedToken } from '../helpers/api-token';
+import { grantPublicAccess } from '../helpers/permissions';
 
 describe('GET /api/author/:slug', () => {
   let strapi: Core.Strapi;
@@ -9,7 +10,18 @@ describe('GET /api/author/:slug', () => {
 
   beforeAll(async () => {
     strapi = await setupStrapi();
-    token = await createReadOnlyToken(strapi);
+    // Grant Public read access to autor/obra to prove the route stays private:
+    // it is gated by its own `findOneBySlug` scope, which Public never has, even
+    // when the catalog's `find`/`findOne` are public.
+    await grantPublicAccess(strapi, 'api::autor.autor', ['find', 'findOne']);
+    await grantPublicAccess(strapi, 'api::obra.obra', ['find', 'findOne']);
+    // Least-privilege custom token: the route action plus obra read access so the
+    // populated `obras` relation survives sanitizeOutput.
+    token = await createScopedToken(strapi, [
+      'api::autor.autor.findOneBySlug',
+      'api::obra.obra.find',
+      'api::obra.obra.findOne',
+    ]);
   });
 
   afterAll(async () => {
