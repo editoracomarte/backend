@@ -42,9 +42,7 @@ export default factories.createCoreService('api::instagram.instagram', ({ strapi
         return posts;
       }
     } catch (error) {
-      strapi.log.warn(
-        `[instagram] RapidAPI fetch failed, falling back to manual posts: ${error}`
-      );
+      strapi.log.warn(`[instagram] RapidAPI fetch failed, falling back to manual posts: ${error}`);
     }
 
     // 3. Fallback: posts manuais do single type
