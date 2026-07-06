@@ -1,15 +1,15 @@
 import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
-import { grantPublicAccess } from '../helpers/permissions';
+import { createReadOnlyToken } from '../helpers/tokens';
 
 describe('Genero public API', () => {
   let strapi: Core.Strapi;
+  let token: string;
 
   beforeAll(async () => {
     strapi = await setupStrapi();
-    await grantPublicAccess(strapi, 'api::genero.genero', ['find', 'findOne']);
-    await grantPublicAccess(strapi, 'api::obra.obra', ['find', 'findOne']);
+    token = await createReadOnlyToken(strapi);
   });
 
   afterAll(async () => {
@@ -22,7 +22,9 @@ describe('Genero public API', () => {
   });
 
   it('should return an empty list when no generos exist', async () => {
-    const res = await request(strapi.server.httpServer).get('/api/generos');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/generos')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([]);
   });
@@ -32,7 +34,9 @@ describe('Genero public API', () => {
       data: { nome: 'Romance', slug: 'romance' },
     });
 
-    const res = await request(strapi.server.httpServer).get(`/api/generos/${created.documentId}`);
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/generos/${created.documentId}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.nome).toBe('Romance');
   });
@@ -62,7 +66,9 @@ describe('Genero public API', () => {
       data: { nome: 'Poesia', slug: 'poesia' },
     });
 
-    const res = await request(strapi.server.httpServer).get('/api/generos');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/generos')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].nome).toBe('Poesia');
@@ -81,9 +87,9 @@ describe('Genero public API', () => {
       },
     });
 
-    const res = await request(strapi.server.httpServer).get(
-      `/api/generos/${genero.documentId}?populate=obras`
-    );
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/generos/${genero.documentId}?populate=obras`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.obras).toHaveLength(1);
     expect(res.body.data.obras[0].titulo).toBe('Dom Casmurro');
