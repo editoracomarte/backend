@@ -1,14 +1,15 @@
 import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
-import { grantPublicAccess } from '../helpers/permissions';
+import { createReadOnlyToken } from '../helpers/tokens';
 
 describe('Instagram public API', () => {
   let strapi: Core.Strapi;
+  let token: string;
 
   beforeAll(async () => {
     strapi = await setupStrapi();
-    await grantPublicAccess(strapi, 'api::instagram.instagram', ['find']);
+    token = await createReadOnlyToken(strapi);
   });
 
   afterAll(async () => {
@@ -27,7 +28,9 @@ describe('Instagram public API', () => {
   ];
 
   it('should return 404 when the singleType has no published entry', async () => {
-    const res = await request(strapi.server.httpServer).get('/api/instagram');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/instagram')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(404);
   });
 
@@ -37,7 +40,9 @@ describe('Instagram public API', () => {
       status: 'published',
     });
 
-    const res = await request(strapi.server.httpServer).get('/api/instagram?populate=posts');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/instagram?populate=posts')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.posts).toHaveLength(3);
     expect(res.body.data.posts[0].url).toBe('https://instagram.com/p/1');

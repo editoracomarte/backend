@@ -1,15 +1,15 @@
 import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
-import { grantPublicAccess } from '../helpers/permissions';
+import { createReadOnlyToken } from '../helpers/tokens';
 
 describe('Autor public API', () => {
   let strapi: Core.Strapi;
+  let token: string;
 
   beforeAll(async () => {
     strapi = await setupStrapi();
-    await grantPublicAccess(strapi, 'api::autor.autor', ['find', 'findOne']);
-    await grantPublicAccess(strapi, 'api::obra.obra', ['find', 'findOne']);
+    token = await createReadOnlyToken(strapi);
   });
 
   afterAll(async () => {
@@ -22,7 +22,9 @@ describe('Autor public API', () => {
   });
 
   it('should return an empty list when no autores exist', async () => {
-    const res = await request(strapi.server.httpServer).get('/api/autores');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/autores')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([]);
   });
@@ -33,7 +35,9 @@ describe('Autor public API', () => {
       status: 'published',
     });
 
-    const res = await request(strapi.server.httpServer).get(`/api/autores/${created.documentId}`);
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/autores/${created.documentId}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.nome).toBe('Machado de Assis');
   });
@@ -72,9 +76,9 @@ describe('Autor public API', () => {
     });
     await strapi.documents('api::autor.autor').publish({ documentId: autor.documentId });
 
-    const res = await request(strapi.server.httpServer).get(
-      `/api/autores/${autor.documentId}?populate=obras`
-    );
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/autores/${autor.documentId}?populate=obras`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.obras).toHaveLength(1);
     expect(res.body.data.obras[0].titulo).toBe('Dom Casmurro');
@@ -85,7 +89,9 @@ describe('Autor public API', () => {
       data: { nome: 'Carlos Drummond (draft)', slug: 'carlos-drummond-draft' },
     });
 
-    const res = await request(strapi.server.httpServer).get('/api/autores');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/autores')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([]);
   });

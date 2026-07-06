@@ -1,13 +1,14 @@
 import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
-import { grantPublicAccess } from '../helpers/permissions';
+import { createReadOnlyToken } from '../helpers/tokens';
 
 let strapi: Core.Strapi;
+let token: string;
 
 beforeAll(async () => {
   strapi = await setupStrapi();
-  await grantPublicAccess(strapi, 'api::obra.obra', ['findFeatured']);
+  token = await createReadOnlyToken(strapi);
 });
 
 afterAll(async () => {
@@ -37,7 +38,10 @@ describe('GET /api/obras/featured', () => {
       await createAndPublishObra(`Obra ${i}`, 2000 + i);
     }
 
-    const res = await request(strapi.server.httpServer).get('/api/obras/featured').expect(200);
+    const res = await request(strapi.server.httpServer)
+      .get('/api/obras/featured')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
 
     expect(res.body.data).toHaveLength(12);
   });
@@ -47,7 +51,10 @@ describe('GET /api/obras/featured', () => {
       await createAndPublishObra(`Obra ${i}`, 2000 + i);
     }
 
-    const res = await request(strapi.server.httpServer).get('/api/obras/featured').expect(200);
+    const res = await request(strapi.server.httpServer)
+      .get('/api/obras/featured')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
 
     const years: number[] = res.body.data.map(
       (o: { anoDePublicacao: number }) => o.anoDePublicacao
@@ -63,7 +70,10 @@ describe('GET /api/obras/featured', () => {
       await createAndPublishObra(`Pequena ${i}`, 2020 + i);
     }
 
-    const res = await request(strapi.server.httpServer).get('/api/obras/featured').expect(200);
+    const res = await request(strapi.server.httpServer)
+      .get('/api/obras/featured')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
 
     expect(res.body.data).toHaveLength(5);
   });
@@ -71,7 +81,10 @@ describe('GET /api/obras/featured', () => {
   it('returns only id, documentId, titulo, slug and anoDePublicacao', async () => {
     await createAndPublishObra('Unica', 2024);
 
-    const res = await request(strapi.server.httpServer).get('/api/obras/featured').expect(200);
+    const res = await request(strapi.server.httpServer)
+      .get('/api/obras/featured')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
 
     expect(res.body.data[0]).toEqual({
       id: expect.any(Number),
