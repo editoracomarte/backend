@@ -91,12 +91,7 @@ curl http://localhost:1337/api/obras/featured
 
 Retorna os detalhes de um autor publicado a partir da sua `slug`, com um payload enxuto: apenas `nome`, `descricao` (RichText) e a lista de obras do autor com `titulo` e `slug`.
 
-**Autenticação:** rota **não pública** — exige um API token no header `Authorization: Bearer <token>`. A rota é protegida pelo seu próprio scope (`findOneBySlug`), que o role Public nunca possui, então ela permanece privada mesmo quando o catálogo de autores é público. Requisições sem token recebem `403`.
-
-Um token **read-only não funciona** aqui: a strategy de api-token do Strapi só libera read-only para scopes terminando em `find`/`findOne`. Use um token **full-access** ou um token **custom** de menor privilégio com as permissões:
-
-- `api::autor.autor.findOneBySlug` — a rota em si;
-- `api::obra.obra.find` / `api::obra.obra.findOne` — para as obras aparecerem populadas na resposta (o `sanitizeOutput` remove a relação se o token não puder ler obra).
+**Autenticação:** rota **não pública** — exige um API token no header `Authorization: Bearer <token>`. Um token **read-only** já basta (o mesmo token usado nos demais endpoints de leitura): a rota declara `config.auth.scope` como uma action de leitura (`api::autor.autor.find`), que a strategy de api-token do Strapi libera para tokens read-only. Como nenhum acesso público é concedido ao role Public, a rota não é pública e requisições sem token recebem `403`.
 
 **Comportamento:**
 
