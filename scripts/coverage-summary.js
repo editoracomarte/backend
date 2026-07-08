@@ -101,7 +101,7 @@ for (const { rel, linePct } of files) {
 
 out.push(
   '',
-  '> ⚠️ Os arquivos medidos são a lógica pura extraída dos endpoints personalizados e utilitários. O código gerado pelo Strapi não é instrumentável pela cobertura — devem ser cobertos pelos testes de integração'
+  '> Os arquivos medidos são a lógica pura extraída dos endpoints personalizados e utilitários. O código gerado pelo Strapi não é instrumentável pela cobertura — devem ser cobertos pelos testes de integração'
 );
 
 console.log(out.join('\n'));
