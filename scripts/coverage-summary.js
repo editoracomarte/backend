@@ -1,13 +1,14 @@
 /**
- * Builds a Markdown coverage report for the GitHub Actions Job Summary.
+ * Builds a Markdown coverage report for the GitHub Actions Job Summary and the
+ * PR comment.
  *
  * Reads Jest's coverage output and prints, to stdout:
- *   - the aggregate totals, and
- *   - a per-file table flagging every file below 100% with the exact
- *     uncovered line numbers (same info as the `text` reporter's
- *     "Uncovered Line #s" column).
+ *   - the aggregate totals,
+ *   - the full list of measured files (with % and any uncovered lines), so it
+ *     is explicit *what* is being covered, and
+ *   - a note clarifying why the Strapi-generated code is not measured.
  *
- * Usage (in CI): node scripts/coverage-summary.js >> "$GITHUB_STEP_SUMMARY"
+ * Usage (in CI): node scripts/coverage-summary.js
  */
 const fs = require('fs');
 const path = require('path');
@@ -66,11 +67,16 @@ for (const [abs, cov] of Object.entries(final)) {
   finalByRel[path.relative(process.cwd(), abs)] = cov;
 }
 
+// One row per measured file, worst coverage first.
 const files = Object.entries(summary)
   .filter(([key]) => key !== 'total')
-  .map(([file, data]) => ({ file, pct: data.lines.pct }));
+  .map(([file, data]) => ({
+    rel: path.relative(process.cwd(), file),
+    linePct: data.lines.pct,
+  }))
+  .sort((a, b) => a.linePct - b.linePct || a.rel.localeCompare(b.rel));
 
-const belowFull = files.filter((f) => f.pct < 100).sort((a, b) => a.pct - b.pct);
+const allFull = files.every((f) => f.linePct === 100);
 
 const out = [
   '## 📊 Coverage',
@@ -82,21 +88,24 @@ const out = [
   `| Functions | ${pct('functions')} | ${total.functions.covered}/${total.functions.total} |`,
   `| Lines | ${pct('lines')} | ${total.lines.covered}/${total.lines.total} |`,
   '',
+  `### Measured files (${files.length}) ${allFull ? '✅' : '⚠️'}`,
+  '',
+  '| File | % Lines | Uncovered lines |',
+  '| --- | --- | --- |',
 ];
 
-if (belowFull.length === 0) {
-  out.push('✅ All measured files are at 100% line coverage.');
-} else {
-  out.push(
-    '### Files missing coverage',
-    '',
-    '| File | % Lines | Uncovered lines |',
-    '| --- | --- | --- |'
-  );
-  for (const { file, pct: linePct } of belowFull) {
-    const rel = path.relative(process.cwd(), file);
-    out.push(`| \`${rel}\` | ${linePct}% | ${uncoveredLines(finalByRel[rel]) || '—'} |`);
-  }
+for (const { rel, linePct } of files) {
+  const uncovered = linePct < 100 ? uncoveredLines(finalByRel[rel]) || '—' : '—';
+  out.push(`| \`${rel}\` | ${linePct}% | ${uncovered} |`);
 }
+
+out.push(
+  '',
+  '> Coverage measures only pure, unit-testable modules. Strapi-generated',
+  '> controllers, services, routes and schemas run inside the Strapi process',
+  "> and can't be instrumented by Jest, so they're excluded from the metric",
+  '> (see `collectCoverageFrom` in `jest.config.ts`). Their behavior is still',
+  '> verified by the integration tests.'
+);
 
 console.log(out.join('\n'));
