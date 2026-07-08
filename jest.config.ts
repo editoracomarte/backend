@@ -9,7 +9,24 @@ const config: Config = {
   globalTeardown: '<rootDir>/tests/helpers/global-teardown.ts',
   testTimeout: 30000,
   verbose: true,
-  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/admin/**', '!src/**/*.d.ts'],
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/admin/**',
+    '!src/**/*.d.ts',
+    // Código gerado/executado pelo Strapi: não é instrumentável pelo Jest
+    // (roda no processo do Strapi via testes de integração), então sempre
+    // apareceria como 0% e distorceria a métrica. Helpers puros co-localizados
+    // (ex.: services/featured.ts) NÃO são excluídos, e por isso são medidos.
+    '!src/index.ts',
+    '!src/api/**/content-types/**', // schemas
+    '!src/api/**/{obra,autor,colecao,genero,instagram}.ts', // controllers/services/routes gerados pela factory
+    '!src/api/**/01-custom-*.ts', // rotas custom (montam rotas no Strapi)
+  ],
+  // text/text-summary imprimem no log; json-summary + json geram
+  // coverage/coverage-summary.json e coverage-final.json, consumidos pelo
+  // scripts/coverage-summary.js para montar o Job Summary do CI (incl. as
+  // linhas descobertas por arquivo).
+  coverageReporters: ['text', 'text-summary', 'json-summary', 'json'],
 };
 
 export default config;

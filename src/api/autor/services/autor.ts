@@ -4,20 +4,12 @@
 
 import { factories } from '@strapi/strapi';
 
+import { autorBySlugQuery, firstOrNull } from './by-slug';
+
 export default factories.createCoreService('api::autor.autor', ({ strapi }) => ({
   async findOneBySlug(slug: string) {
-    const [autor] = await strapi.documents('api::autor.autor').findMany({
-      status: 'published',
-      filters: { slug },
-      fields: ['nome', 'descricao'],
-      populate: {
-        obras: {
-          fields: ['titulo', 'slug'],
-        },
-      },
-      limit: 1,
-    });
+    const results = await strapi.documents('api::autor.autor').findMany(autorBySlugQuery(slug));
 
-    return autor ?? null;
+    return firstOrNull(results);
   },
 }));
