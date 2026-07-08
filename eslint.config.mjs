@@ -2,6 +2,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
+import globals from 'globals';
 
 export default tseslint.config(
   // Ignores globais (substitui .eslintignore)
@@ -38,6 +39,18 @@ export default tseslint.config(
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+    },
+  },
+
+  // Scripts Node (CommonJS) — habilita globals do Node (require, process, ...)
+  {
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: globals.node,
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
 

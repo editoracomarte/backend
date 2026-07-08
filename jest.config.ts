@@ -22,6 +22,11 @@ const config: Config = {
     '!src/api/**/{obra,autor,colecao,genero,instagram}.ts', // controllers/services/routes gerados pela factory
     '!src/api/**/01-custom-*.ts', // rotas custom (montam rotas no Strapi)
   ],
+  // text/text-summary imprimem no log; json-summary + json geram
+  // coverage/coverage-summary.json e coverage-final.json, consumidos pelo
+  // scripts/coverage-summary.js para montar o Job Summary do CI (incl. as
+  // linhas descobertas por arquivo).
+  coverageReporters: ['text', 'text-summary', 'json-summary', 'json'],
 };
 
 export default config;
