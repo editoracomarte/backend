@@ -101,11 +101,7 @@ for (const { rel, linePct } of files) {
 
 out.push(
   '',
-  '> Coverage measures only pure, unit-testable modules. Strapi-generated',
-  '> controllers, services, routes and schemas run inside the Strapi process',
-  "> and can't be instrumented by Jest, so they're excluded from the metric",
-  '> (see `collectCoverageFrom` in `jest.config.ts`). Their behavior is still',
-  '> verified by the integration tests.'
+  '> ⚠️ Os arquivos medidos são a lógica pura extraída dos endpoints personalizados e utilitários. O código gerado pelo Strapi não é instrumentável pela cobertura — devem ser cobertos pelos testes de integração'
 );
 
 console.log(out.join('\n'));
