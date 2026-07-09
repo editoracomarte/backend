@@ -18,5 +18,18 @@ export default {
         middlewares: [],
       },
     },
+    {
+      method: 'GET',
+      path: '/obras/:slug/related',
+      handler: 'obra.findRelated',
+      config: {
+        // Same read scope so the app's read-only API token can reach it.
+        auth: {
+          scope: ['api::obra.obra.find'],
+        },
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };

@@ -89,6 +89,49 @@ Retorna uma seleção curada de até 12 obras publicadas para exibição em dest
 curl http://localhost:1337/api/obras/featured
 ```
 
+### `GET /api/obras/:slug/related`
+
+Retorna obras relacionadas à obra identificada pela `slug`, ranqueadas por **sobreposição ponderada** de autor, coleção e gênero.
+
+**Ranqueamento:** cada obra publicada recebe um score comparada à obra base:
+
+```
+score = 3·(autores em comum) + 2·(coleções em comum) + 1·(gêneros em comum)
+```
+
+Ordena por `score` decrescente, desempatando por `anoDePublicacao` (mais recente primeiro) e depois `titulo`. Autor é o sinal mais forte; gênero o mais fraco (uma obra costuma ter vários gêneros).
+
+**Fallback:** quando há menos obras com coincidência real (`score > 0`) do que o pedido, a lista é completada com as **mais recentes** (excluindo a base e as já incluídas), que entram com `score: 0`. Assim a rota devolve sempre a quantidade pedida — ou menos, apenas se o acervo for pequeno.
+
+**Query params:**
+
+| Param        | Efeito                                                                                                                                   |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `?limit=N`   | Quantas obras retornar. Default `5`, limitado a `[1, 20]`. Valor ausente/inválido/`≤ 0` → `5`; acima do teto → `20`. Nunca retorna erro. |
+| `?showScore` | Inclui o campo `score` em cada obra (apenas para depuração; o front não usa).                                                            |
+
+**Comportamento:**
+
+- busca pela `slug` (campo `uid` único), não pelo `documentId`
+- considera somente obras **publicadas**; `404` se a slug base não existir ou for apenas rascunho
+- payload padrão por obra: `{ id, documentId, titulo, slug, anoDePublicacao }`
+
+**Resposta:**
+
+```json
+{
+  "data": [
+    {
+      "id": 29,
+      "documentId": "uv3d1i9gne4004hcfs7kwve4",
+      "titulo": "Assalto ao Céu",
+      "slug": "assalto-ao-ceu",
+      "anoDePublicacao": 2014
+    }
+  ]
+}
+```
+
 ### `GET /api/author/:slug`
 
 Retorna os detalhes de um autor publicado a partir da sua `slug`, com um payload enxuto: apenas `nome`, `descricao` (RichText) e a lista de obras do autor com `titulo` e `slug`.
