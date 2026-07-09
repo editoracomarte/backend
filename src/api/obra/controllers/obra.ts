@@ -10,4 +10,17 @@ export default factories.createCoreController('api::obra.obra', ({ strapi }) => 
     const sanitizedData = await this.sanitizeOutput(data, ctx);
     return ctx.send({ data: sanitizedData });
   },
+
+  async findOneBySlug(ctx) {
+    const { slug } = ctx.params;
+
+    const obra = await strapi.service('api::obra.obra').findOneBySlug(slug);
+
+    if (!obra) {
+      return ctx.notFound('Obra não encontrada');
+    }
+
+    const sanitizedData = await this.sanitizeOutput(obra, ctx);
+    return ctx.send({ data: sanitizedData });
+  },
 }));

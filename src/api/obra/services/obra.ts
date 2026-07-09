@@ -5,6 +5,7 @@
 import { factories } from '@strapi/strapi';
 
 import { selectFeatured } from './featured';
+import { obraBySlugQuery, firstOrNull } from './by-slug';
 
 export default factories.createCoreService('api::obra.obra', ({ strapi }) => ({
   async findFeatured() {
@@ -15,5 +16,11 @@ export default factories.createCoreService('api::obra.obra', ({ strapi }) => ({
     });
 
     return selectFeatured(allObras);
+  },
+
+  async findOneBySlug(slug: string) {
+    const results = await strapi.documents('api::obra.obra').findMany(obraBySlugQuery(slug));
+
+    return firstOrNull(results);
   },
 }));
