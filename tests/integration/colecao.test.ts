@@ -1,15 +1,15 @@
 import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
-import { grantPublicAccess } from '../helpers/permissions';
+import { createReadOnlyToken } from '../helpers/tokens';
 
 describe('Colecao public API', () => {
   let strapi: Core.Strapi;
+  let token: string;
 
   beforeAll(async () => {
     strapi = await setupStrapi();
-    await grantPublicAccess(strapi, 'api::colecao.colecao', ['find', 'findOne']);
-    await grantPublicAccess(strapi, 'api::obra.obra', ['find', 'findOne']);
+    token = await createReadOnlyToken(strapi);
   });
 
   afterAll(async () => {
@@ -22,7 +22,9 @@ describe('Colecao public API', () => {
   });
 
   it('should return an empty list when no colecoes exist', async () => {
-    const res = await request(strapi.server.httpServer).get('/api/colecoes');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/colecoes')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([]);
   });
@@ -36,7 +38,9 @@ describe('Colecao public API', () => {
       status: 'published',
     });
 
-    const res = await request(strapi.server.httpServer).get(`/api/colecoes/${created.documentId}`);
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/colecoes/${created.documentId}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.nome).toBe('Clássicos da Literatura Brasileira');
   });
@@ -65,9 +69,9 @@ describe('Colecao public API', () => {
     });
     await strapi.documents('api::colecao.colecao').publish({ documentId: colecao.documentId });
 
-    const res = await request(strapi.server.httpServer).get(
-      `/api/colecoes/${colecao.documentId}?populate=obras`
-    );
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/colecoes/${colecao.documentId}?populate=obras`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.obras).toHaveLength(1);
     expect(res.body.data.obras[0].titulo).toBe('Dom Casmurro');
@@ -78,7 +82,9 @@ describe('Colecao public API', () => {
       data: { nome: 'Coleção Draft' },
     });
 
-    const res = await request(strapi.server.httpServer).get('/api/colecoes');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/colecoes')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([]);
   });

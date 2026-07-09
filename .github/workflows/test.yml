@@ -11,6 +11,10 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,8 +28,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage
+        run: npm run test:coverage
         env:
           APP_KEYS: test-key-1,test-key-2
           API_TOKEN_SALT: test-salt
@@ -34,3 +38,40 @@ jobs:
           JWT_SECRET: test-jwt
           ENCRYPTION_KEY: test-encryption
           NODE_ENV: test
+
+      - name: Build coverage report
+        if: always()
+        run: node scripts/coverage-summary.js | tee coverage-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment coverage on PR
+        if: ${{ always() && github.event_name == 'pull_request' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- coverage-report -->';
+            const report = fs.existsSync('coverage-report.md')
+              ? fs.readFileSync('coverage-report.md', 'utf8')
+              : '_No coverage report was generated._';
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const sha = context.payload.pull_request.head.sha.slice(0, 7);
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const header = `Commit \`${sha}\` · [run #${context.runNumber}](${runUrl})`;
+            const body = `${marker}\n${header}\n${report}`;
+
+            // Apaga os reports antigos (identificados pelo marcador) para manter só o mais recente.
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+            });
+            for (const c of comments) {
+              if (c.body && c.body.includes(marker)) {
+                await github.rest.issues.deleteComment({ owner, repo, comment_id: c.id });
+              }
+            }
+
+            // Posta o report novo, sempre no fim da thread.
+            await github.rest.issues.createComment({ owner, repo, issue_number, body });

@@ -27,6 +27,8 @@ cp .env.example .env
 | `DATABASE_*`                   | peça ao time as credenciais do banco                                                                                   |
 | `NODE_ENV`                     | `development` para editar content types, `production` para uso normal                                                  |
 | `STRAPI_IMPORT_ENCRYPTION_KEY` | chave usada para decriptar o arquivo de seed — peça ao time                                                            |
+| `RAPIDAPI_KEY`                 | chave da RapidAPI (`instagram-looter2`) usada para buscar os posts do Instagram — peça ao time (rotacione se vazar)    |
+| `INSTAGRAM_USER_ID`            | id numérico da conta de Instagram da editora (ex.: `536626219`)                                                        |
 
 ## Rodando
 
@@ -65,7 +67,7 @@ docker compose down
 | `obra`                    | `/api/obras`     |
 | `instagram` (single type) | `/api/instagram` |
 
-O single type `instagram` expõe um campo `Postagem` repetível com **exatamente 3 itens** do componente `midia.url` (`url` obrigatório e único, `rotulo` opcional).
+O single type `instagram` guarda um campo `posts` repetível com **exatamente 3 itens** do componente `midia.url` (`url` obrigatório e único, `label` opcional). Esses posts servem de **fallback manual** — a rota `GET /api/instagram` prioriza os posts buscados via RapidAPI (ver [Rotas customizadas](#rotas-customizadas)).
 
 ## Rotas customizadas
 
@@ -85,6 +87,67 @@ Retorna uma seleção curada de até 12 obras publicadas para exibição em dest
 
 ```bash
 curl http://localhost:1337/api/obras/featured
+```
+
+### `GET /api/author/:slug`
+
+Retorna os detalhes de um autor publicado a partir da sua `slug`, com um payload enxuto: apenas `nome`, `descricao` (RichText) e a lista de obras do autor com `titulo` e `slug`.
+
+**Autenticação:** rota **não pública** — exige um API token no header `Authorization: Bearer <token>`. Um token **read-only** já basta (o mesmo token usado nos demais endpoints de leitura): a rota declara `config.auth.scope` como uma action de leitura (`api::autor.autor.find`), que a strategy de api-token do Strapi libera para tokens read-only. Como nenhum acesso público é concedido ao role Public, a rota não é pública e requisições sem token recebem `403`.
+
+**Comportamento:**
+
+- busca pela `slug` (campo `uid` único), não pelo `documentId`
+- retorna somente conteúdo **publicado**; `404` se a slug não existir ou for apenas rascunho
+- as obras vêm populadas com `titulo` e `slug` (campos fora desse escopo não são expostos)
+
+**Resposta:**
+
+```json
+{
+  "data": {
+    "nome": "Machado de Assis",
+    "descricao": [{ "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }],
+    "obras": [{ "titulo": "Dom Casmurro", "slug": "dom-casmurro" }]
+  }
+}
+```
+
+**Exemplo:**
+
+```bash
+curl http://localhost:1337/api/author/machado-de-assis \
+  -H "Authorization: Bearer <api-token>"
+```
+
+### `GET /api/instagram`
+
+Retorna as URLs dos **3 últimos posts** do Instagram da editora, buscados via **RapidAPI** (`instagram-looter2`) e cacheados por **12h** (`strapi.store`). Fluxo:
+
+1. cache fresco (< 12h) → retorna direto;
+2. senão chama a RapidAPI (timeout 5s), mapeia cada `shortcode` para `https://www.instagram.com/p/<shortcode>/` e grava no cache;
+3. se a API falhar (ex.: cota `429`), cai nos posts inseridos **manualmente** no dashboard;
+4. sem cache, sem API e sem entry manual → **404**.
+
+Requer as env vars `RAPIDAPI_KEY` e `INSTAGRAM_USER_ID`. A rota **não é pública** — exige um API token no header `Authorization: Bearer <token>` (um token **read-only** já basta).
+
+**Exemplo:**
+
+```bash
+curl http://localhost:1337/api/instagram \
+  -H "Authorization: Bearer <api-token>"
+```
+
+```json
+{
+  "data": {
+    "posts": [
+      { "url": "https://www.instagram.com/p/DaXsVGOlVks/" },
+      { "url": "https://www.instagram.com/p/DaFqrZTie6c/" },
+      { "url": "https://www.instagram.com/p/DZzpMt3hSob/" }
+    ]
+  }
+}
 ```
 
 ## Populando o banco com dados iniciais

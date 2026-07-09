@@ -1,17 +1,15 @@
 import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
-import { grantPublicAccess } from '../helpers/permissions';
+import { createReadOnlyToken } from '../helpers/tokens';
 
 describe('Obra public API', () => {
   let strapi: Core.Strapi;
+  let token: string;
 
   beforeAll(async () => {
     strapi = await setupStrapi();
-    await grantPublicAccess(strapi, 'api::obra.obra', ['find', 'findOne']);
-    await grantPublicAccess(strapi, 'api::autor.autor', ['find', 'findOne']);
-    await grantPublicAccess(strapi, 'api::colecao.colecao', ['find', 'findOne']);
-    await grantPublicAccess(strapi, 'api::genero.genero', ['find', 'findOne']);
+    token = await createReadOnlyToken(strapi);
   });
 
   afterAll(async () => {
@@ -26,7 +24,9 @@ describe('Obra public API', () => {
   });
 
   it('should return an empty list when no obras exist', async () => {
-    const res = await request(strapi.server.httpServer).get('/api/obras');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/obras')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([]);
   });
@@ -43,7 +43,9 @@ describe('Obra public API', () => {
       status: 'published',
     });
 
-    const res = await request(strapi.server.httpServer).get(`/api/obras/${created.documentId}`);
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/obras/${created.documentId}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.titulo).toBe('Dom Casmurro');
   });
@@ -150,9 +152,9 @@ describe('Obra public API', () => {
     });
     await strapi.documents('api::obra.obra').publish({ documentId: obra.documentId });
 
-    const res = await request(strapi.server.httpServer).get(
-      `/api/obras/${obra.documentId}?populate=autoria`
-    );
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/obras/${obra.documentId}?populate=autoria`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.autoria).toHaveLength(1);
     expect(res.body.data.autoria[0].nome).toBe('Machado de Assis');
@@ -175,9 +177,9 @@ describe('Obra public API', () => {
     });
     await strapi.documents('api::obra.obra').publish({ documentId: obra.documentId });
 
-    const res = await request(strapi.server.httpServer).get(
-      `/api/obras/${obra.documentId}?populate=colecao`
-    );
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/obras/${obra.documentId}?populate=colecao`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.colecao).toHaveLength(1);
     expect(res.body.data.colecao[0].nome).toBe('Clássicos da Literatura Brasileira');
@@ -196,9 +198,9 @@ describe('Obra public API', () => {
     });
     await strapi.documents('api::obra.obra').publish({ documentId: obra.documentId });
 
-    const res = await request(strapi.server.httpServer).get(
-      `/api/obras/${obra.documentId}?populate=generos`
-    );
+    const res = await request(strapi.server.httpServer)
+      .get(`/api/obras/${obra.documentId}?populate=generos`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.generos).toHaveLength(1);
     expect(res.body.data.generos[0].nome).toBe('Romance');
@@ -209,7 +211,9 @@ describe('Obra public API', () => {
       data: { titulo: 'Capitu (draft)', slug: 'capitu-draft' },
     });
 
-    const res = await request(strapi.server.httpServer).get('/api/obras');
+    const res = await request(strapi.server.httpServer)
+      .get('/api/obras')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([]);
   });
@@ -219,12 +223,16 @@ describe('Obra public API', () => {
       data: { titulo: 'Memórias de um Sargento de Milícias', slug: 'memorias-sargento-milicias' },
     });
 
-    let res = await request(strapi.server.httpServer).get('/api/obras');
+    let res = await request(strapi.server.httpServer)
+      .get('/api/obras')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.body.data).toEqual([]);
 
     await strapi.documents('api::obra.obra').publish({ documentId: created.documentId });
 
-    res = await request(strapi.server.httpServer).get('/api/obras');
+    res = await request(strapi.server.httpServer)
+      .get('/api/obras')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].titulo).toBe('Memórias de um Sargento de Milícias');
   });
