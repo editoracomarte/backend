@@ -71,7 +71,10 @@ describe('GET /api/obra/:slug', () => {
     expect(res.body.data.descricao).toEqual(descricao);
     expect(res.body.data.isbn).toBe('9788535910662');
     expect(res.body.data.anoDePublicacao).toBe(1899);
-    expect(res.body.data.autoria[0]).toMatchObject({ nome: 'Machado de Assis', slug: 'machado-de-assis' });
+    expect(res.body.data.autoria[0]).toMatchObject({
+      nome: 'Machado de Assis',
+      slug: 'machado-de-assis',
+    });
     expect(res.body.data.colecao[0]).toMatchObject({ nome: 'Clássicos', slug: 'classicos' });
     expect(res.body.data.generos[0]).toMatchObject({ nome: 'Romance', slug: 'romance' });
   });
