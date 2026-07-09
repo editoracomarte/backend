@@ -112,7 +112,9 @@ describe('GET /api/collection/:slug', () => {
     });
     await strapi.documents('api::colecao.colecao').publish({ documentId: colecao.documentId });
 
-    const res = await request(strapi.server.httpServer).get('/api/collection/classicos-brasileiros');
+    const res = await request(strapi.server.httpServer).get(
+      '/api/collection/classicos-brasileiros'
+    );
     expect([401, 403]).toContain(res.status);
   });
 });
