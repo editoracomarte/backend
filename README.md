@@ -107,7 +107,7 @@ Ordena por `score` decrescente, desempatando por `anoDePublicacao` (mais recente
 
 | Param        | Efeito                                                                                                                                   |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `?limit=N`   | Quantas obras retornar. Default `5`, limitado a `[1, 20]`. Valor ausente/inválido/`≤ 0` → `5`; acima do teto → `20`. Nunca retorna erro. |
+| `?limit=N`   | Quantas obras retornar. Default `5`, limitado a `[1, 10]`. Valor ausente/inválido/`≤ 0` → `5`; acima do teto → `10`. Nunca retorna erro. |
 | `?showScore` | Inclui o campo `score` em cada obra (apenas para depuração; o front não usa).                                                            |
 
 **Comportamento:**

@@ -19,7 +19,7 @@ export const RELATED_WEIGHTS = { autor: 3, colecao: 2, genero: 1 } as const;
 export const RELATED_LIMIT = 5;
 
 /** Ceiling for the `?limit` query param, to protect the backend. */
-export const RELATED_MAX_LIMIT = 20;
+export const RELATED_MAX_LIMIT = 10;
 
 /**
  * Parses the `?limit` query value into a positive integer, clamped to
