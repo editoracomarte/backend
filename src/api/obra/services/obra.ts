@@ -5,6 +5,7 @@
 import { factories } from '@strapi/strapi';
 
 import { selectFeatured } from './featured';
+import { obraBySlugQuery, firstOrNull } from './by-slug';
 import {
   extractIds,
   fallbackRecentQuery,
@@ -100,5 +101,11 @@ export default factories.createCoreService('api::obra.obra', ({ strapi }) => ({
     }));
 
     return fillWithFallback(related, fallback, limit);
+  },
+
+  async findOneBySlug(slug: string) {
+    const results = await strapi.documents('api::obra.obra').findMany(obraBySlugQuery(slug));
+
+    return firstOrNull(results);
   },
 }));
