@@ -19,6 +19,19 @@ export default {
       },
     },
     {
+      method: 'GET',
+      path: '/obras/:slug/related',
+      handler: 'obra.findRelated',
+      config: {
+        // Same read scope so the app's read-only API token can reach it.
+        auth: {
+          scope: ['api::obra.obra.find'],
+        },
+        policies: [],
+        middlewares: [],
+      },
+    },
+    {
       // Singular segment (`/obra`) so this does not shadow the core
       // `GET /obras/:documentId` findOne route registered by the default router.
       method: 'GET',
