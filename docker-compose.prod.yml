@@ -7,32 +7,39 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - '${DATABASE_PORT:-5432}:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}']
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
 
   strapi:
     build:
       context: .
-      target: dev
+      target: prod
     env_file: .env
     environment:
-      DATABASE_HOST: postgres # override the 127.0.0.1 from .env
-      NODE_ENV: ${NODE_ENV:-development}
-      SEED_ON_BOOT: ${SEED_ON_BOOT:-false}
-      STRAPI_IMPORT_ENCRYPTION_KEY: ${STRAPI_IMPORT_ENCRYPTION_KEY}
-    ports:
-      - '${PORT:-1337}:1337'
+      DATABASE_HOST: postgres
+      NODE_ENV: production
     volumes:
-      - .:/app
-      - /app/node_modules
+      - uploads:/app/public/uploads
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
 
+  proxy:
+    image: nginx:1.27-alpine
+    ports:
+      - '${EDGE_PORT:-80}:80'
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${FRONTEND_DIST:?set FRONTEND_DIST to the Vite build output on the host}:/srv/frontend:ro
+    restart: unless-stopped
+    depends_on:
+      - strapi
+
 volumes:
   postgres_data:
+  uploads:
