@@ -18,10 +18,14 @@ services:
     build:
       context: .
       target: prod
+      extra_hosts:
+        - 'registry.npmjs.org:${NPM_REGISTRY_IP:-104.16.11.34}'
     env_file: .env
     environment:
       DATABASE_HOST: postgres
       NODE_ENV: production
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
     volumes:
       - uploads:/app/public/uploads
     restart: unless-stopped

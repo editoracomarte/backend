@@ -21,5 +21,6 @@ CMD ["npm", "run", "develop"]
 
 FROM base AS prod
 ENV NODE_ENV=production
+ENV STRAPI_TELEMETRY_DISABLED=1
 RUN npm run build
 CMD ["npm", "start"]

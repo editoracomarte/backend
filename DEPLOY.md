@@ -114,11 +114,27 @@ ls "$FRONTEND_DIST/index.html"
 ### 5. Subir a stack
 
 ```sh
+export NPM_REGISTRY_IP=$(getent ahostsv4 registry.npmjs.org | head -1 | awk '{print $1}')
 docker compose up -d --build
 ```
 
 Sobe com banco vazio. O `COMPOSE_FILE` do `.env` já aponta para o arquivo de
 produção.
+
+> ⚠️ **Por que o `export NPM_REGISTRY_IP`.** O IPv6 da VM é um buraco negro: o
+> `npm ci` dentro do build tenta os endereços IPv6 do registro, cada conexão
+> expira, e a imagem sai com o `node_modules` **vazio** — o build "termina" mas o
+> container falha com `sh: strapi: not found`. O `docker-compose.prod.yml` passa
+> esse IP para o `build.extra_hosts`, fixando o registro em IPv4 só durante o
+> build (o `--add-host` é a única forma que funciona: o BuildKit monta o
+> `/etc/hosts` como read-only, então não dá para editá-lo no Dockerfile).
+> Resolvemos o IPv4 na hora porque a Cloudflare rotaciona os endereços. Se pular
+> este `export`, cai no IP de fallback do compose — que costuma funcionar (edges
+> anycast da Cloudflare), mas o `export` é o caminho garantido.
+>
+> O mesmo IPv6 quebrado afeta o **runtime** (o Strapi chamando a RapidAPI do
+> Instagram): por isso o serviço `strapi` desliga o IPv6 dentro do container, via
+> `net.ipv6.conf.all.disable_ipv6=1` na chave `sysctls` do compose.
 
 ### 6. Verificar a trava do `register-admin` — ANTES de qualquer outra coisa
 
