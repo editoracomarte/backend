@@ -4,3 +4,5 @@ node_modules
 build
 dist
 .git
+.env
+.env.*

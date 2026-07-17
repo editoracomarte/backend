@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  strapi:
+    build:
+      context: .
+      target: prod
+      extra_hosts:
+        - 'registry.npmjs.org:${NPM_REGISTRY_IP:-104.16.11.34}'
+    env_file: .env
+    environment:
+      DATABASE_HOST: postgres
+      NODE_ENV: production
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    volumes:
+      - uploads:/app/public/uploads
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  proxy:
+    image: nginx:1.27-alpine
+    ports:
+      - '${EDGE_PORT:-80}:80'
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${FRONTEND_DIST:?set FRONTEND_DIST to the Vite build output on the host}:/srv/frontend:ro
+    restart: unless-stopped
+    depends_on:
+      - strapi
+
+volumes:
+  postgres_data:
+  uploads:
