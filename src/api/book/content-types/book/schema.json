@@ -1,0 +1,68 @@
+{
+  "kind": "collectionType",
+  "collectionName": "books",
+  "info": {
+    "singularName": "book",
+    "pluralName": "books",
+    "displayName": "Obras"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "slug": {
+      "type": "uid",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "richtext"
+    },
+    "format": {
+      "type": "string"
+    },
+    "isbn": {
+      "type": "string"
+    },
+    "issn": {
+      "type": "string"
+    },
+    "page_num": {
+      "type": "integer"
+    },
+    "publishing_year": {
+      "type": "integer"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "sample_url": {
+      "type": "string"
+    },
+    "store_url": {
+      "type": "string"
+    },
+    "authors": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::author.author",
+      "mappedBy": "books"
+    },
+    "collections": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::collection.collection",
+      "inversedBy": "books"
+    },
+    "genres": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::genre.genre",
+      "inversedBy": "books"
+    }
+  }
+}
