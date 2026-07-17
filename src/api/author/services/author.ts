@@ -4,4 +4,12 @@
 
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreService('api::author.author');
+import { authorBySlugQuery, firstOrNull } from './by-slug';
+
+export default factories.createCoreService('api::author.author', ({ strapi }) => ({
+  async findOneBySlug(slug: string) {
+    const results = await strapi.documents('api::author.author').findMany(authorBySlugQuery(slug));
+
+    return firstOrNull(results);
+  },
+}));

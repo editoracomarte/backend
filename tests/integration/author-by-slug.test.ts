@@ -17,79 +17,74 @@ describe('GET /api/author/:slug', () => {
   });
 
   afterEach(async () => {
-    await strapi.db.query('api::autor.autor').deleteMany({});
-    await strapi.db.query('api::obra.obra').deleteMany({});
+    await strapi.db.query('api::author.author').deleteMany({});
+    await strapi.db.query('api::book.book').deleteMany({});
   });
 
   function authGet(path: string) {
     return request(strapi.server.httpServer).get(path).set('Authorization', `Bearer ${token}`);
   }
 
-  async function createPublishedObra(titulo: string, slug: string) {
-    const doc = await strapi.documents('api::obra.obra').create({
-      data: { titulo, slug },
+  async function createPublishedBook(title: string, slug: string) {
+    const doc = await strapi.documents('api::book.book').create({
+      data: { title, slug },
     });
-    await strapi.documents('api::obra.obra').publish({ documentId: doc.documentId });
+    await strapi.documents('api::book.book').publish({ documentId: doc.documentId });
     return doc;
   }
 
-  it('returns nome, descricao and obras[{ titulo, slug }] for a valid slug', async () => {
-    const obra = await createPublishedObra('Dom Casmurro', 'dom-casmurro');
-    const descricao = [
-      {
-        type: 'paragraph' as const,
-        children: [{ type: 'text' as const, text: 'Escritor brasileiro.' }],
-      },
-    ];
-    const autor = await strapi.documents('api::autor.autor').create({
+  it('returns name, description and books[{ title, slug }] for a valid slug', async () => {
+    const book = await createPublishedBook('Dom Casmurro', 'dom-casmurro');
+    const description = 'Escritor brasileiro.';
+    const author = await strapi.documents('api::author.author').create({
       data: {
-        nome: 'Machado de Assis',
+        name: 'Machado de Assis',
         slug: 'machado-de-assis',
-        descricao,
-        obras: [obra.documentId],
+        description,
+        books: [book.documentId],
       },
     });
-    await strapi.documents('api::autor.autor').publish({ documentId: autor.documentId });
+    await strapi.documents('api::author.author').publish({ documentId: author.documentId });
 
     const res = await authGet('/api/author/machado-de-assis').expect(200);
 
-    expect(res.body.data.nome).toBe('Machado de Assis');
-    expect(res.body.data.descricao).toEqual(descricao);
-    expect(res.body.data.obras).toHaveLength(1);
-    expect(res.body.data.obras[0]).toMatchObject({
-      titulo: 'Dom Casmurro',
+    expect(res.body.data.name).toBe('Machado de Assis');
+    expect(res.body.data.description).toEqual(description);
+    expect(res.body.data.books).toHaveLength(1);
+    expect(res.body.data.books[0]).toMatchObject({
+      title: 'Dom Casmurro',
       slug: 'dom-casmurro',
     });
   });
 
-  it('does not leak obra fields outside the requested scope', async () => {
-    const obra = await strapi.documents('api::obra.obra').create({
+  it('does not leak book fields outside the requested scope', async () => {
+    const book = await strapi.documents('api::book.book').create({
       data: {
-        titulo: 'Memórias Póstumas',
+        title: 'Memórias Póstumas',
         slug: 'memorias-postumas',
         isbn: '9788535910662',
-        formato: 'Livro',
-        anoDePublicacao: 1881,
+        format: 'Livro',
+        publishing_year: 1881,
       },
     });
-    await strapi.documents('api::obra.obra').publish({ documentId: obra.documentId });
+    await strapi.documents('api::book.book').publish({ documentId: book.documentId });
 
-    const autor = await strapi.documents('api::autor.autor').create({
+    const author = await strapi.documents('api::author.author').create({
       data: {
-        nome: 'Machado de Assis',
+        name: 'Machado de Assis',
         slug: 'machado-de-assis',
-        obras: [obra.documentId],
+        books: [book.documentId],
       },
     });
-    await strapi.documents('api::autor.autor').publish({ documentId: autor.documentId });
+    await strapi.documents('api::author.author').publish({ documentId: author.documentId });
 
     const res = await authGet('/api/author/machado-de-assis').expect(200);
 
-    const obraKeys = Object.keys(res.body.data.obras[0]);
-    expect(obraKeys).toEqual(expect.arrayContaining(['titulo', 'slug']));
-    expect(obraKeys).not.toContain('isbn');
-    expect(obraKeys).not.toContain('formato');
-    expect(obraKeys).not.toContain('anoDePublicacao');
+    const bookKeys = Object.keys(res.body.data.books[0]);
+    expect(bookKeys).toEqual(expect.arrayContaining(['title', 'slug']));
+    expect(bookKeys).not.toContain('isbn');
+    expect(bookKeys).not.toContain('format');
+    expect(bookKeys).not.toContain('publishing_year');
   });
 
   it('returns 404 for a non-existent slug', async () => {
@@ -97,9 +92,9 @@ describe('GET /api/author/:slug', () => {
     expect(res.status).toBe(404);
   });
 
-  it('does not return a draft-only autor', async () => {
-    await strapi.documents('api::autor.autor').create({
-      data: { nome: 'Rascunho', slug: 'rascunho' },
+  it('does not return a draft-only author', async () => {
+    await strapi.documents('api::author.author').create({
+      data: { name: 'Rascunho', slug: 'rascunho' },
     });
 
     const res = await authGet('/api/author/rascunho');
@@ -107,10 +102,10 @@ describe('GET /api/author/:slug', () => {
   });
 
   it('rejects requests without an API token', async () => {
-    const autor = await strapi.documents('api::autor.autor').create({
-      data: { nome: 'Machado de Assis', slug: 'machado-de-assis' },
+    const author = await strapi.documents('api::author.author').create({
+      data: { name: 'Machado de Assis', slug: 'machado-de-assis' },
     });
-    await strapi.documents('api::autor.autor').publish({ documentId: autor.documentId });
+    await strapi.documents('api::author.author').publish({ documentId: author.documentId });
 
     const res = await request(strapi.server.httpServer).get('/api/author/machado-de-assis');
     expect([401, 403]).toContain(res.status);
