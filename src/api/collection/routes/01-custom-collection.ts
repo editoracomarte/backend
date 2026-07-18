@@ -1,5 +1,5 @@
 /**
- * colecao custom routes
+ * collection custom routes
  */
 
 export default {
@@ -7,14 +7,14 @@ export default {
     {
       method: 'GET',
       path: '/collection/:slug',
-      handler: 'colecao.findOneBySlug',
+      handler: 'collection.findOneBySlug',
       config: {
         policies: [],
         middlewares: [],
         // Read scope so a read-only API token (the app's standard token) can
         // reach this route, consistent with the other content-api endpoints.
         auth: {
-          scope: ['api::colecao.colecao.find'],
+          scope: ['api::collection.collection.find'],
         },
       },
     },

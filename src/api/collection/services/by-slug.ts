@@ -1,26 +1,26 @@
 /**
- * Pure helpers for the "find colecao by slug" flow, extracted from the
+ * Pure helpers for the "find collection by slug" flow, extracted from the
  * Strapi-bound service so they can be unit-tested and instrumented for
  * coverage without booting Strapi.
  */
 
 /**
- * Builds the `documents().findMany` params to fetch a single published colecao
- * by slug, including the titulo/slug of its obras. Centralizing the query
- * locks the public field contract consumed by the frontend.
+ * Builds the `documents().findMany` params to fetch a single published
+ * collection by slug, including the title/slug of its books. Centralizing the
+ * query locks the public field contract consumed by the frontend.
  *
  * Fields are typed as literal tuples so the query is not widened to
  * `string[]`; the actual field names are still validated by `findMany` at the
  * call site in the service.
  */
-export function colecaoBySlugQuery(slug: string) {
+export function collectionBySlugQuery(slug: string) {
   return {
     status: 'published' as const,
     filters: { slug },
-    fields: ['nome', 'descricao'] as ['nome', 'descricao'],
+    fields: ['name', 'description'] as ['name', 'description'],
     populate: {
-      obras: {
-        fields: ['titulo', 'slug'] as ['titulo', 'slug'],
+      books: {
+        fields: ['title', 'slug'] as ['title', 'slug'],
       },
     },
     limit: 1,
