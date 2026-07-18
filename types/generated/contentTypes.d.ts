@@ -541,12 +541,14 @@ export interface ApiFooterFooter extends Struct.SingleTypeSchema {
   };
   attributes: {
     address: Schema.Attribute.Component<'address.address', false>;
+    copyright: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     email: Schema.Attribute.Email;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::footer.footer'> &
       Schema.Attribute.Private;
+    organization: Schema.Attribute.String;
     phone: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;

@@ -17,6 +17,12 @@
     "email": {
       "type": "email"
     },
+    "organization": {
+      "type": "string"
+    },
+    "copyright": {
+      "type": "string"
+    },
     "address": {
       "type": "component",
       "component": "address.address",
