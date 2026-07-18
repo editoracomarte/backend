@@ -529,6 +529,31 @@ export interface ApiCollectionCollection extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiFooterFooter extends Struct.SingleTypeSchema {
+  collectionName: 'footers';
+  info: {
+    displayName: 'Rodap\u00E9';
+    pluralName: 'footers';
+    singularName: 'footer';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    address: Schema.Attribute.Component<'address.address', false>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+    email: Schema.Attribute.Email;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::footer.footer'> &
+      Schema.Attribute.Private;
+    phone: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+  };
+}
+
 export interface ApiGeneroGenero extends Struct.CollectionTypeSchema {
   collectionName: 'generos';
   info: {
@@ -1077,6 +1102,7 @@ declare module '@strapi/strapi' {
       'api::book.book': ApiBookBook;
       'api::colecao.colecao': ApiColecaoColecao;
       'api::collection.collection': ApiCollectionCollection;
+      'api::footer.footer': ApiFooterFooter;
       'api::genero.genero': ApiGeneroGenero;
       'api::genre.genre': ApiGenreGenre;
       'api::instagram.instagram': ApiInstagramInstagram;

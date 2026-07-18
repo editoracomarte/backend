@@ -1,0 +1,35 @@
+{
+  "collectionName": "components_address_addresses",
+  "info": {
+    "displayName": "address",
+    "icon": "house"
+  },
+  "options": {},
+  "attributes": {
+    "district": {
+      "type": "string"
+    },
+    "complement1": {
+      "type": "string"
+    },
+    "complement2": {
+      "type": "string"
+    },
+    "cep": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "street": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}
