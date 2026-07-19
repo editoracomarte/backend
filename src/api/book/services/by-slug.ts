@@ -29,16 +29,7 @@ export function bookBySlugQuery(slug: string) {
       'format',
       'page_num',
       'publishing_year',
-    ] as [
-      'title',
-      'slug',
-      'description',
-      'isbn',
-      'issn',
-      'format',
-      'page_num',
-      'publishing_year',
-    ],
+    ] as ['title', 'slug', 'description', 'isbn', 'issn', 'format', 'page_num', 'publishing_year'],
     populate: {
       authors: { fields: relationFields },
       collections: { fields: relationFields },
