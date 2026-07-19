@@ -1,5 +1,5 @@
 /**
- * autor custom routes
+ * author custom routes
  */
 
 export default {
@@ -7,14 +7,14 @@ export default {
     {
       method: 'GET',
       path: '/author/:slug',
-      handler: 'autor.findOneBySlug',
+      handler: 'author.findOneBySlug',
       config: {
         policies: [],
         middlewares: [],
         // Read scope so a read-only API token (the app's standard token) can
         // reach this route, consistent with the other content-api endpoints.
         auth: {
-          scope: ['api::autor.autor.find'],
+          scope: ['api::author.author.find'],
         },
       },
     },
