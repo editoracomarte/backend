@@ -21,6 +21,7 @@ describe('bookBySlugQuery', () => {
       'format',
       'page_num',
       'publishing_year',
+      'store_url',
     ]);
   });
 
@@ -30,6 +31,13 @@ describe('bookBySlugQuery', () => {
     expect(query.populate.authors.fields).toEqual(['name', 'slug']);
     expect(query.populate.collections.fields).toEqual(['name', 'slug']);
     expect(query.populate.genres.fields).toEqual(['name', 'slug']);
+  });
+
+  it('populates cover/sample with only the url (API contract)', () => {
+    const query = bookBySlugQuery('any');
+
+    expect(query.populate.cover.fields).toEqual(['url']);
+    expect(query.populate.sample.fields).toEqual(['url']);
   });
 });
 

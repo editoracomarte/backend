@@ -21,10 +21,28 @@ describe('GET /api/book/:slug', () => {
     await strapi.db.query('api::author.author').deleteMany({});
     await strapi.db.query('api::collection.collection').deleteMany({});
     await strapi.db.query('api::genre.genre').deleteMany({});
+    await strapi.db.query('plugin::upload.file').deleteMany({});
   });
 
   function authGet(path: string) {
     return request(strapi.server.httpServer).get(path).set('Authorization', `Bearer ${token}`);
+  }
+
+  let uploadSeq = 0;
+  async function createUpload(overrides: Record<string, unknown> = {}) {
+    uploadSeq += 1;
+    return strapi.db.query('plugin::upload.file').create({
+      data: {
+        name: 'cover.jpg',
+        hash: `cover_hash_${uploadSeq}`,
+        ext: '.jpg',
+        mime: 'image/jpeg',
+        size: 10,
+        url: `/uploads/cover_hash_${uploadSeq}.jpg`,
+        provider: 'local',
+        ...overrides,
+      },
+    });
   }
 
   it('returns the book fields and its relations for a valid slug', async () => {
@@ -51,6 +69,8 @@ describe('GET /api/book/:slug', () => {
       },
     ];
 
+    const cover = await createUpload();
+
     const book = await strapi.documents('api::book.book').create({
       data: {
         title: 'Dom Casmurro',
@@ -60,6 +80,8 @@ describe('GET /api/book/:slug', () => {
         format: 'Livro',
         page_num: 256,
         publishing_year: 1899,
+        store_url: 'https://loja.example.com/dom-casmurro',
+        cover: cover.id,
         authors: [author.documentId],
         collections: [collection.documentId],
         genres: [genre.documentId],
@@ -73,12 +95,47 @@ describe('GET /api/book/:slug', () => {
     expect(res.body.data.description).toEqual(description);
     expect(res.body.data.isbn).toBe('9788535910662');
     expect(res.body.data.publishing_year).toBe(1899);
+    expect(res.body.data.store_url).toBe('https://loja.example.com/dom-casmurro');
     expect(res.body.data.authors[0]).toMatchObject({
       name: 'Machado de Assis',
       slug: 'machado-de-assis',
     });
     expect(res.body.data.collections[0]).toMatchObject({ name: 'Clássicos', slug: 'classicos' });
     expect(res.body.data.genres[0]).toMatchObject({ name: 'Romance', slug: 'romance' });
+  });
+
+  it('returns the url of the cover and sample media', async () => {
+    const cover = await createUpload({
+      name: 'cover.jpg',
+      hash: 'cover_hash',
+      ext: '.jpg',
+      mime: 'image/jpeg',
+      url: '/uploads/cover_hash.jpg',
+    });
+
+    const sample = await createUpload({
+      name: 'sample.pdf',
+      hash: 'sample_hash',
+      ext: '.pdf',
+      mime: 'application/pdf',
+      size: 20,
+      url: '/uploads/sample_hash.pdf',
+    });
+
+    const book = await strapi.documents('api::book.book').create({
+      data: {
+        title: 'Dom Casmurro',
+        slug: 'dom-casmurro',
+        cover: cover.id,
+        sample: sample.id,
+      },
+    });
+    await strapi.documents('api::book.book').publish({ documentId: book.documentId });
+
+    const res = await authGet('/api/book/dom-casmurro').expect(200);
+
+    expect(res.body.data.cover.url).toBe('/uploads/cover_hash.jpg');
+    expect(res.body.data.sample.url).toBe('/uploads/sample_hash.pdf');
   });
 
   it('does not leak relation fields outside the requested scope', async () => {
@@ -91,10 +148,13 @@ describe('GET /api/book/:slug', () => {
     });
     await strapi.documents('api::author.author').publish({ documentId: author.documentId });
 
+    const cover = await createUpload();
+
     const book = await strapi.documents('api::book.book').create({
       data: {
         title: 'Dom Casmurro',
         slug: 'dom-casmurro',
+        cover: cover.id,
         authors: [author.documentId],
       },
     });
@@ -113,8 +173,9 @@ describe('GET /api/book/:slug', () => {
   });
 
   it('does not return a draft-only book', async () => {
+    const cover = await createUpload();
     await strapi.documents('api::book.book').create({
-      data: { title: 'Rascunho', slug: 'rascunho' },
+      data: { title: 'Rascunho', slug: 'rascunho', cover: cover.id },
     });
 
     const res = await authGet('/api/book/rascunho');
@@ -122,8 +183,9 @@ describe('GET /api/book/:slug', () => {
   });
 
   it('does not shadow the core GET /api/books/:documentId findOne route', async () => {
+    const cover = await createUpload();
     const book = await strapi.documents('api::book.book').create({
-      data: { title: 'Dom Casmurro', slug: 'dom-casmurro' },
+      data: { title: 'Dom Casmurro', slug: 'dom-casmurro', cover: cover.id },
     });
     await strapi.documents('api::book.book').publish({ documentId: book.documentId });
 
@@ -133,8 +195,9 @@ describe('GET /api/book/:slug', () => {
   });
 
   it('rejects requests without an API token', async () => {
+    const cover = await createUpload();
     const book = await strapi.documents('api::book.book').create({
-      data: { title: 'Dom Casmurro', slug: 'dom-casmurro' },
+      data: { title: 'Dom Casmurro', slug: 'dom-casmurro', cover: cover.id },
     });
     await strapi.documents('api::book.book').publish({ documentId: book.documentId });
 
