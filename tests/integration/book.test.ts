@@ -2,14 +2,17 @@ import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
 import { createReadOnlyToken } from '../helpers/tokens';
+import { createUploadFile } from '../helpers/uploads';
 
 describe('Book public API', () => {
   let strapi: Core.Strapi;
   let token: string;
+  let coverId: number;
 
   beforeAll(async () => {
     strapi = await setupStrapi();
     token = await createReadOnlyToken(strapi);
+    coverId = await createUploadFile(strapi);
   });
 
   afterAll(async () => {
@@ -39,6 +42,7 @@ describe('Book public API', () => {
         isbn: '978-85-254-3296-4',
         publishing_year: 1899,
         page_num: 256,
+        cover: coverId,
       },
       status: 'published',
     });
@@ -54,7 +58,7 @@ describe('Book public API', () => {
     await expect(
       strapi.documents('api::book.book').create({
         // @ts-expect-error — intentionally omitting required field
-        data: { slug: 'sem-titulo' },
+        data: { slug: 'sem-titulo', cover: coverId },
         status: 'published',
       })
     ).rejects.toThrow();
@@ -64,7 +68,7 @@ describe('Book public API', () => {
     await expect(
       strapi.documents('api::book.book').create({
         // @ts-expect-error — intentionally omitting required field
-        data: { title: 'Sem Slug' },
+        data: { title: 'Sem Slug', cover: coverId },
         status: 'published',
       })
     ).rejects.toThrow();
@@ -76,6 +80,7 @@ describe('Book public API', () => {
         title: 'O Cortiço',
         slug: 'o-cortico',
         isbn: '978-85-254-3296-4',
+        cover: coverId,
       },
       status: 'published',
     });
@@ -85,6 +90,7 @@ describe('Book public API', () => {
           title: 'Iracema',
           slug: 'iracema',
           isbn: '978-85-254-3296-4',
+          cover: coverId,
         },
         status: 'published',
       })
@@ -97,6 +103,7 @@ describe('Book public API', () => {
         title: 'Revista A',
         slug: 'revista-a',
         issn: '1234-5678',
+        cover: coverId,
       },
       status: 'published',
     });
@@ -106,6 +113,7 @@ describe('Book public API', () => {
           title: 'Revista B',
           slug: 'revista-b',
           issn: '1234-5678',
+          cover: coverId,
         },
         status: 'published',
       })
@@ -122,6 +130,7 @@ describe('Book public API', () => {
         title: 'Dom Casmurro',
         slug: 'dom-casmurro',
         authors: [author.documentId],
+        cover: coverId,
       },
     });
     await strapi.documents('api::book.book').publish({ documentId: book.documentId });
@@ -147,6 +156,7 @@ describe('Book public API', () => {
         title: 'Dom Casmurro',
         slug: 'dom-casmurro',
         collections: [collection.documentId],
+        cover: coverId,
       },
     });
     await strapi.documents('api::book.book').publish({ documentId: book.documentId });
@@ -168,6 +178,7 @@ describe('Book public API', () => {
         title: 'Dom Casmurro',
         slug: 'dom-casmurro',
         genres: [genre.documentId],
+        cover: coverId,
       },
     });
     await strapi.documents('api::book.book').publish({ documentId: book.documentId });
@@ -182,7 +193,7 @@ describe('Book public API', () => {
 
   it('should hide a draft book from the public find endpoint', async () => {
     await strapi.documents('api::book.book').create({
-      data: { title: 'Capitu (draft)', slug: 'capitu-draft' },
+      data: { title: 'Capitu (draft)', slug: 'capitu-draft', cover: coverId },
     });
 
     const res = await request(strapi.server.httpServer)
@@ -194,7 +205,11 @@ describe('Book public API', () => {
 
   it('should expose a book in the public find endpoint after publish', async () => {
     const created = await strapi.documents('api::book.book').create({
-      data: { title: 'Memórias de um Sargento de Milícias', slug: 'memorias-sargento-milicias' },
+      data: {
+        title: 'Memórias de um Sargento de Milícias',
+        slug: 'memorias-sargento-milicias',
+        cover: coverId,
+      },
     });
 
     let res = await request(strapi.server.httpServer)

@@ -2,13 +2,16 @@ import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
 import { createReadOnlyToken } from '../helpers/tokens';
+import { createUploadFile } from '../helpers/uploads';
 
 let strapi: Core.Strapi;
 let token: string;
+let coverId: number;
 
 beforeAll(async () => {
   strapi = await setupStrapi();
   token = await createReadOnlyToken(strapi);
+  coverId = await createUploadFile(strapi);
 });
 
 afterAll(async () => {
@@ -26,6 +29,7 @@ async function createAndPublishBook(title: string, publishing_year: number) {
       title,
       slug: title.toLowerCase().replace(/\s/g, '-'),
       publishing_year,
+      cover: coverId,
     },
   });
   await strapi.documents('api::book.book').publish({ documentId: doc.documentId });
