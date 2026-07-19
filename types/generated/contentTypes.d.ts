@@ -562,7 +562,7 @@ export interface ApiGenreGenre extends Struct.CollectionTypeSchema {
     singularName: 'genre';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     books: Schema.Attribute.Relation<'manyToMany', 'api::book.book'>;
@@ -571,7 +571,7 @@ export interface ApiGenreGenre extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::genre.genre'> &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String & Schema.Attribute.Required & Schema.Attribute.Unique;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
