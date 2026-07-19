@@ -8,28 +8,28 @@ import {
   RELATED_LIMIT,
   RELATED_MAX_LIMIT,
   RELATED_WEIGHTS,
-  type ObraRelationIds,
+  type BookRelationIds,
   type RelatedCandidate,
   type RelatedResult,
-} from '../../../src/api/obra/services/related';
+} from '../../../src/api/book/services/related';
 
-const EMPTY: ObraRelationIds = { autorIds: [], colecaoIds: [], generoIds: [] };
+const EMPTY: BookRelationIds = { authorIds: [], collectionIds: [], genreIds: [] };
 
 const candidate = (over: Partial<RelatedCandidate>): RelatedCandidate => ({
   id: 1,
   documentId: 'doc',
-  titulo: 'Título',
+  title: 'Título',
   slug: 'titulo',
-  anoDePublicacao: 2000,
-  autorIds: [],
-  colecaoIds: [],
-  generoIds: [],
+  publishing_year: 2000,
+  authorIds: [],
+  collectionIds: [],
+  genreIds: [],
   ...over,
 });
 
 describe('RELATED_WEIGHTS', () => {
-  it('weights autor > coleção > gênero (3·2·1)', () => {
-    expect(RELATED_WEIGHTS).toEqual({ autor: 3, colecao: 2, genero: 1 });
+  it('weights author > collection > genre (3·2·1)', () => {
+    expect(RELATED_WEIGHTS).toEqual({ author: 3, collection: 2, genre: 1 });
   });
 });
 
@@ -46,13 +46,13 @@ describe('extractIds', () => {
 });
 
 describe('relatedCandidatesQuery', () => {
-  const base: ObraRelationIds = {
-    autorIds: ['aut-1', 'aut-2'],
-    colecaoIds: ['col-1'],
-    generoIds: ['gen-1'],
+  const base: BookRelationIds = {
+    authorIds: ['aut-1', 'aut-2'],
+    collectionIds: ['col-1'],
+    genreIds: ['gen-1'],
   };
 
-  it('excludes the base obra by slug and only fetches published', () => {
+  it('excludes the base book by slug and only fetches published', () => {
     const q = relatedCandidatesQuery(base, 'angola-janga')!;
 
     expect(q.status).toBe('published');
@@ -64,16 +64,16 @@ describe('relatedCandidatesQuery', () => {
     const or = q.filters.$and[1].$or;
 
     expect(or).toEqual([
-      { autoria: { documentId: { $in: ['aut-1', 'aut-2'] } } },
-      { colecao: { documentId: { $in: ['col-1'] } } },
-      { generos: { documentId: { $in: ['gen-1'] } } },
+      { authors: { documentId: { $in: ['aut-1', 'aut-2'] } } },
+      { collections: { documentId: { $in: ['col-1'] } } },
+      { genres: { documentId: { $in: ['gen-1'] } } },
     ]);
   });
 
   it('omits relations that are empty on the base', () => {
-    const q = relatedCandidatesQuery({ ...EMPTY, autorIds: ['aut-1'] }, 'x')!;
+    const q = relatedCandidatesQuery({ ...EMPTY, authorIds: ['aut-1'] }, 'x')!;
 
-    expect(q.filters.$and[1].$or).toEqual([{ autoria: { documentId: { $in: ['aut-1'] } } }]);
+    expect(q.filters.$and[1].$or).toEqual([{ authors: { documentId: { $in: ['aut-1'] } } }]);
   });
 
   it('returns null when the base has no relations to match on', () => {
@@ -83,32 +83,32 @@ describe('relatedCandidatesQuery', () => {
   it('requests the public fields and populates the scored relations', () => {
     const q = relatedCandidatesQuery(base, 'x')!;
 
-    expect(q.fields).toEqual(['titulo', 'slug', 'anoDePublicacao']);
-    expect(Object.keys(q.populate)).toEqual(['autoria', 'colecao', 'generos']);
+    expect(q.fields).toEqual(['title', 'slug', 'publishing_year']);
+    expect(Object.keys(q.populate)).toEqual(['authors', 'collections', 'genres']);
   });
 });
 
 describe('rankRelated', () => {
-  const base: ObraRelationIds = {
-    autorIds: ['A1', 'A2'],
-    colecaoIds: ['C1', 'C2'],
-    generoIds: ['G1', 'G2', 'G3'],
+  const base: BookRelationIds = {
+    authorIds: ['A1', 'A2'],
+    collectionIds: ['C1', 'C2'],
+    genreIds: ['G1', 'G2', 'G3'],
   };
 
-  it('scores overlap as 3·autor + 2·coleção + 1·gênero', () => {
+  it('scores overlap as 3·author + 2·collection + 1·genre', () => {
     const [ranked] = rankRelated(base, [
-      candidate({ documentId: 'x', autorIds: ['A1'], colecaoIds: ['C1'], generoIds: ['G1'] }),
+      candidate({ documentId: 'x', authorIds: ['A1'], collectionIds: ['C1'], genreIds: ['G1'] }),
     ]);
 
-    expect(ranked.overlap).toEqual({ autor: 1, colecao: 1, genero: 1 });
+    expect(ranked.overlap).toEqual({ author: 1, collection: 1, genre: 1 });
     expect(ranked.score).toBe(6); // 3 + 2 + 1
   });
 
   it('ranks a shared author above a shared collection above a shared genre', () => {
     const ranked = rankRelated(base, [
-      candidate({ documentId: 'genero', generoIds: ['G1'] }),
-      candidate({ documentId: 'autor', autorIds: ['A1'] }),
-      candidate({ documentId: 'colecao', colecaoIds: ['C1'] }),
+      candidate({ documentId: 'genero', genreIds: ['G1'] }),
+      candidate({ documentId: 'autor', authorIds: ['A1'] }),
+      candidate({ documentId: 'colecao', collectionIds: ['C1'] }),
     ]);
 
     expect(ranked.map((r) => r.documentId)).toEqual(['autor', 'colecao', 'genero']);
@@ -116,27 +116,27 @@ describe('rankRelated', () => {
 
   it('drops candidates that share nothing with the base', () => {
     const ranked = rankRelated(base, [
-      candidate({ documentId: 'unrelated', autorIds: ['ZZ'], generoIds: ['ZZ'] }),
+      candidate({ documentId: 'unrelated', authorIds: ['ZZ'], genreIds: ['ZZ'] }),
     ]);
 
     expect(ranked).toEqual([]);
   });
 
-  it('breaks score ties by anoDePublicacao desc, then titulo', () => {
+  it('breaks score ties by publishing_year desc, then title', () => {
     const ranked = rankRelated(base, [
-      candidate({ documentId: 'old', titulo: 'B', autorIds: ['A1'], anoDePublicacao: 2000 }),
-      candidate({ documentId: 'new', titulo: 'C', autorIds: ['A1'], anoDePublicacao: 2020 }),
-      candidate({ documentId: 'tie', titulo: 'A', autorIds: ['A1'], anoDePublicacao: 2020 }),
+      candidate({ documentId: 'old', title: 'B', authorIds: ['A1'], publishing_year: 2000 }),
+      candidate({ documentId: 'new', title: 'C', authorIds: ['A1'], publishing_year: 2020 }),
+      candidate({ documentId: 'tie', title: 'A', authorIds: ['A1'], publishing_year: 2020 }),
     ]);
 
-    // Same score (one shared author each): newest first, then titulo A before C.
+    // Same score (one shared author each): newest first, then title A before C.
     expect(ranked.map((r) => r.documentId)).toEqual(['tie', 'new', 'old']);
   });
 
-  it('treats a null anoDePublicacao as the oldest when breaking ties', () => {
+  it('treats a null publishing_year as the oldest when breaking ties', () => {
     const ranked = rankRelated(base, [
-      candidate({ documentId: 'dated', autorIds: ['A1'], anoDePublicacao: 1990 }),
-      candidate({ documentId: 'undated', autorIds: ['A1'], anoDePublicacao: null }),
+      candidate({ documentId: 'dated', authorIds: ['A1'], publishing_year: 1990 }),
+      candidate({ documentId: 'undated', authorIds: ['A1'], publishing_year: null }),
     ]);
 
     expect(ranked.map((r) => r.documentId)).toEqual(['dated', 'undated']);
@@ -144,7 +144,7 @@ describe('rankRelated', () => {
 
   it('returns at most RELATED_LIMIT (5) results', () => {
     const many = Array.from({ length: 9 }, (_, i) =>
-      candidate({ documentId: `d${i}`, titulo: `T${i}`, autorIds: ['A1'] })
+      candidate({ documentId: `d${i}`, title: `T${i}`, authorIds: ['A1'] })
     );
 
     expect(rankRelated(base, many)).toHaveLength(RELATED_LIMIT);
@@ -152,7 +152,7 @@ describe('rankRelated', () => {
 
   it('honors a custom limit', () => {
     const many = Array.from({ length: 5 }, (_, i) =>
-      candidate({ documentId: `d${i}`, autorIds: ['A1'] })
+      candidate({ documentId: `d${i}`, authorIds: ['A1'] })
     );
 
     expect(rankRelated(base, many, 2)).toHaveLength(2);
@@ -191,13 +191,13 @@ describe('parseLimit', () => {
 });
 
 describe('fallbackRecentQuery', () => {
-  it('fetches recent published obras excluding the given slugs', () => {
+  it('fetches recent published books excluding the given slugs', () => {
     const q = fallbackRecentQuery(['base', 'ja-relacionada']);
 
     expect(q.status).toBe('published');
     expect(q.filters).toEqual({ slug: { $notIn: ['base', 'ja-relacionada'] } });
-    expect(q.sort).toBe('anoDePublicacao:desc');
-    expect(q.fields).toEqual(['titulo', 'slug', 'anoDePublicacao']);
+    expect(q.sort).toBe('publishing_year:desc');
+    expect(q.fields).toEqual(['title', 'slug', 'publishing_year']);
     expect(q.limit).toBe(RELATED_LIMIT);
   });
 });
@@ -206,9 +206,9 @@ describe('fillWithFallback', () => {
   const result = (over: Partial<RelatedResult>): RelatedResult => ({
     id: 1,
     documentId: 'doc',
-    titulo: 'T',
+    title: 'T',
     slug: 't',
-    anoDePublicacao: 2000,
+    publishing_year: 2000,
     score: 0,
     ...over,
   });
@@ -233,7 +233,7 @@ describe('fillWithFallback', () => {
     expect(out.map((o) => o.documentId)).toEqual(['r0', 'f0', 'f1']);
   });
 
-  it('never duplicates an obra already present as related', () => {
+  it('never duplicates a book already present as related', () => {
     const related = [result({ documentId: 'shared', score: 3 })];
     const fallback = [result({ documentId: 'shared' }), result({ documentId: 'new' })];
 

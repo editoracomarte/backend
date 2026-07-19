@@ -17,15 +17,16 @@
     },
     "slug": {
       "type": "uid",
+      "targetField": "name",
       "required": true
     },
     "lattes": {
       "type": "string",
-      "regex": "/^https?:\\/\\/lattes\\.cnpq\\.br\\/\\d{16}$/"
+      "regex": "^https?://lattes\\.cnpq\\.br/\\d{16}$"
     },
     "orcid": {
       "type": "string",
-      "regex": "/^https?:\\/\\/orcid\\.org\\/\\d{4}-\\d{4}-\\d{4}-\\d{3}[\\dX]$/"
+      "regex": "^https?://orcid\\.org/\\d{4}-\\d{4}-\\d{4}-\\d{3}[\\dX]$"
     },
     "description": {
       "type": "richtext"
