@@ -12,52 +12,52 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await strapi.db.query('api::obra.obra').deleteMany({});
+  await strapi.db.query('api::book.book').deleteMany({});
   await cleanupStrapi();
 });
 
 afterEach(async () => {
-  await strapi.db.query('api::obra.obra').deleteMany({});
+  await strapi.db.query('api::book.book').deleteMany({});
 });
 
-async function createAndPublishObra(titulo: string, anoDePublicacao: number) {
-  const doc = await strapi.documents('api::obra.obra').create({
+async function createAndPublishBook(title: string, publishing_year: number) {
+  const doc = await strapi.documents('api::book.book').create({
     data: {
-      titulo,
-      slug: titulo.toLowerCase().replace(/\s/g, '-'),
-      anoDePublicacao,
+      title,
+      slug: title.toLowerCase().replace(/\s/g, '-'),
+      publishing_year,
     },
   });
-  await strapi.documents('api::obra.obra').publish({ documentId: doc.documentId });
+  await strapi.documents('api::book.book').publish({ documentId: doc.documentId });
   return doc;
 }
 
-describe('GET /api/obras/featured', () => {
-  it('returns up to 12 obras', async () => {
+describe('GET /api/books/featured', () => {
+  it('returns up to 12 books', async () => {
     for (let i = 0; i < 15; i++) {
-      await createAndPublishObra(`Obra ${i}`, 2000 + i);
+      await createAndPublishBook(`Obra ${i}`, 2000 + i);
     }
 
     const res = await request(strapi.server.httpServer)
-      .get('/api/obras/featured')
+      .get('/api/books/featured')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
     expect(res.body.data).toHaveLength(12);
   });
 
-  it('always includes the 6 most recent obras', async () => {
+  it('always includes the 6 most recent books', async () => {
     for (let i = 0; i < 15; i++) {
-      await createAndPublishObra(`Obra ${i}`, 2000 + i);
+      await createAndPublishBook(`Obra ${i}`, 2000 + i);
     }
 
     const res = await request(strapi.server.httpServer)
-      .get('/api/obras/featured')
+      .get('/api/books/featured')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
     const years: number[] = res.body.data.map(
-      (o: { anoDePublicacao: number }) => o.anoDePublicacao
+      (o: { publishing_year: number }) => o.publishing_year
     );
 
     for (const year of [2009, 2010, 2011, 2012, 2013, 2014]) {
@@ -65,33 +65,33 @@ describe('GET /api/obras/featured', () => {
     }
   });
 
-  it('returns all obras when total is less than 12', async () => {
+  it('returns all books when total is less than 12', async () => {
     for (let i = 0; i < 5; i++) {
-      await createAndPublishObra(`Pequena ${i}`, 2020 + i);
+      await createAndPublishBook(`Pequena ${i}`, 2020 + i);
     }
 
     const res = await request(strapi.server.httpServer)
-      .get('/api/obras/featured')
+      .get('/api/books/featured')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
     expect(res.body.data).toHaveLength(5);
   });
 
-  it('returns only id, documentId, titulo, slug and anoDePublicacao', async () => {
-    await createAndPublishObra('Unica', 2024);
+  it('returns only id, documentId, title, slug and publishing_year', async () => {
+    await createAndPublishBook('Unica', 2024);
 
     const res = await request(strapi.server.httpServer)
-      .get('/api/obras/featured')
+      .get('/api/books/featured')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
     expect(res.body.data[0]).toEqual({
       id: expect.any(Number),
       documentId: expect.any(String),
-      titulo: 'Unica',
+      title: 'Unica',
       slug: 'unica',
-      anoDePublicacao: 2024,
+      publishing_year: 2024,
     });
   });
 });
