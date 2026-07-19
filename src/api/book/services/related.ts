@@ -43,6 +43,19 @@ export interface BookRelationIds {
   genreIds: string[];
 }
 
+/** The cover as exposed by the endpoint: just its url, or null when absent. */
+export interface CoverUrl {
+  url: string;
+}
+
+/**
+ * Narrows a populated cover (`{ url }`) down to the public {@link CoverUrl}
+ * shape, yielding `null` when the cover or its url is missing.
+ */
+export function pickCoverUrl(cover?: { url?: string | null } | null): CoverUrl | null {
+  return cover?.url ? { url: cover.url } : null;
+}
+
 /** A candidate book plus the relation ids used to score it. */
 export interface RelatedCandidate extends BookRelationIds {
   id: number | string;
@@ -50,6 +63,7 @@ export interface RelatedCandidate extends BookRelationIds {
   title: string;
   slug: string;
   publishing_year: number | null;
+  cover: CoverUrl | null;
 }
 
 /** A scored candidate, as returned by {@link rankRelated}. */
@@ -65,6 +79,7 @@ export interface RelatedResult {
   title: string;
   slug: string;
   publishing_year: number | null;
+  cover: CoverUrl | null;
   score: number;
 }
 
@@ -106,6 +121,7 @@ export function relatedCandidatesQuery(base: BookRelationIds, slug: string) {
       authors: { fields: ['name'] as ['name'] },
       collections: { fields: ['name'] as ['name'] },
       genres: { fields: ['name'] as ['name'] },
+      cover: { fields: ['url'] as ['url'] },
     },
   };
 }
@@ -122,6 +138,9 @@ export function fallbackRecentQuery(excludeSlugs: string[], limit: number = RELA
     filters: { slug: { $notIn: excludeSlugs } },
     sort: 'publishing_year:desc' as const,
     fields: ['title', 'slug', 'publishing_year'] as ['title', 'slug', 'publishing_year'],
+    populate: {
+      cover: { fields: ['url'] as ['url'] },
+    },
     limit,
   };
 }

@@ -10,6 +10,7 @@ import {
   extractIds,
   fallbackRecentQuery,
   fillWithFallback,
+  pickCoverUrl,
   rankRelated,
   relatedCandidatesQuery,
   RELATED_LIMIT,
@@ -67,18 +68,20 @@ export default factories.createCoreService('api::book.book', ({ strapi }) => ({
       title: c.title,
       slug: c.slug,
       publishing_year: c.publishing_year ?? null,
+      cover: pickCoverUrl(c.cover),
       authorIds: extractIds(c.authors),
       collectionIds: extractIds(c.collections),
       genreIds: extractIds(c.genres),
     }));
 
     const related: RelatedResult[] = rankRelated(baseIds, shaped, limit).map(
-      ({ id, documentId, title, slug: s, publishing_year, score }) => ({
+      ({ id, documentId, title, slug: s, publishing_year, cover, score }) => ({
         id,
         documentId,
         title,
         slug: s,
         publishing_year,
+        cover,
         score,
       })
     );
@@ -97,6 +100,7 @@ export default factories.createCoreService('api::book.book', ({ strapi }) => ({
       title: c.title,
       slug: c.slug,
       publishing_year: c.publishing_year ?? null,
+      cover: pickCoverUrl(c.cover),
       score: 0,
     }));
 

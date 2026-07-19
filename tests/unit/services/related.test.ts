@@ -3,6 +3,7 @@ import {
   fallbackRecentQuery,
   fillWithFallback,
   parseLimit,
+  pickCoverUrl,
   rankRelated,
   relatedCandidatesQuery,
   RELATED_LIMIT,
@@ -21,6 +22,7 @@ const candidate = (over: Partial<RelatedCandidate>): RelatedCandidate => ({
   title: 'Título',
   slug: 'titulo',
   publishing_year: 2000,
+  cover: null,
   authorIds: [],
   collectionIds: [],
   genreIds: [],
@@ -42,6 +44,19 @@ describe('extractIds', () => {
     expect(extractIds([])).toEqual([]);
     expect(extractIds(undefined)).toEqual([]);
     expect(extractIds(null)).toEqual([]);
+  });
+});
+
+describe('pickCoverUrl', () => {
+  it('narrows a populated cover to just its url', () => {
+    expect(pickCoverUrl({ url: '/uploads/cover.jpg' })).toEqual({ url: '/uploads/cover.jpg' });
+  });
+
+  it('returns null when the cover or its url is missing', () => {
+    expect(pickCoverUrl(null)).toBeNull();
+    expect(pickCoverUrl(undefined)).toBeNull();
+    expect(pickCoverUrl({})).toBeNull();
+    expect(pickCoverUrl({ url: null })).toBeNull();
   });
 });
 
@@ -84,7 +99,8 @@ describe('relatedCandidatesQuery', () => {
     const q = relatedCandidatesQuery(base, 'x')!;
 
     expect(q.fields).toEqual(['title', 'slug', 'publishing_year']);
-    expect(Object.keys(q.populate)).toEqual(['authors', 'collections', 'genres']);
+    expect(Object.keys(q.populate)).toEqual(['authors', 'collections', 'genres', 'cover']);
+    expect(q.populate.cover.fields).toEqual(['url']);
   });
 });
 
@@ -198,6 +214,7 @@ describe('fallbackRecentQuery', () => {
     expect(q.filters).toEqual({ slug: { $notIn: ['base', 'ja-relacionada'] } });
     expect(q.sort).toBe('publishing_year:desc');
     expect(q.fields).toEqual(['title', 'slug', 'publishing_year']);
+    expect(q.populate.cover.fields).toEqual(['url']);
     expect(q.limit).toBe(RELATED_LIMIT);
   });
 });
@@ -209,6 +226,7 @@ describe('fillWithFallback', () => {
     title: 'T',
     slug: 't',
     publishing_year: 2000,
+    cover: null,
     score: 0,
     ...over,
   });
