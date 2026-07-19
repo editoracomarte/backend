@@ -17,7 +17,12 @@ export function authorBySlugQuery(slug: string) {
   return {
     status: 'published' as const,
     filters: { slug },
-    fields: ['name', 'description'] as ['name', 'description'],
+    fields: ['name', 'description', 'lattes', 'orcid'] as [
+      'name',
+      'description',
+      'lattes',
+      'orcid',
+    ],
     populate: {
       books: {
         fields: ['title', 'slug'] as ['title', 'slug'],

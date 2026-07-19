@@ -33,14 +33,18 @@ describe('GET /api/author/:slug', () => {
     return doc;
   }
 
-  it('returns name, description and books[{ title, slug }] for a valid slug', async () => {
+  it('returns name, description, lattes, orcid and books[{ title, slug }] for a valid slug', async () => {
     const book = await createPublishedBook('Dom Casmurro', 'dom-casmurro');
     const description = 'Escritor brasileiro.';
+    const lattes = 'http://lattes.cnpq.br/1234567890123456';
+    const orcid = 'https://orcid.org/0000-0002-1825-0097';
     const author = await strapi.documents('api::author.author').create({
       data: {
         name: 'Machado de Assis',
         slug: 'machado-de-assis',
         description,
+        lattes,
+        orcid,
         books: [book.documentId],
       },
     });
@@ -50,6 +54,8 @@ describe('GET /api/author/:slug', () => {
 
     expect(res.body.data.name).toBe('Machado de Assis');
     expect(res.body.data.description).toEqual(description);
+    expect(res.body.data.lattes).toEqual(lattes);
+    expect(res.body.data.orcid).toEqual(orcid);
     expect(res.body.data.books).toHaveLength(1);
     expect(res.body.data.books[0]).toMatchObject({
       title: 'Dom Casmurro',

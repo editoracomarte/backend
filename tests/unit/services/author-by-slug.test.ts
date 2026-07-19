@@ -9,10 +9,10 @@ describe('authorBySlugQuery', () => {
     expect(query.limit).toBe(1);
   });
 
-  it('returns name/description and populates books with title/slug (API contract)', () => {
+  it('returns name, description, lattes, orcid and populates books with title/slug (API contract)', () => {
     const query = authorBySlugQuery('any');
 
-    expect(query.fields).toEqual(['name', 'description']);
+    expect(query.fields).toEqual(['name', 'description', 'lattes', 'orcid']);
     expect(query.populate.books.fields).toEqual(['title', 'slug']);
   });
 });
