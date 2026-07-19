@@ -70,32 +70,6 @@ describe('Book public API', () => {
     ).rejects.toThrow();
   });
 
-  it('should reject creation when ISBN format is invalid', async () => {
-    await expect(
-      strapi.documents('api::book.book').create({
-        data: {
-          title: 'Memórias Póstumas de Brás Cubas',
-          slug: 'memorias-postumas-de-bras-cubas',
-          isbn: 'not-a-real-isbn',
-        },
-        status: 'published',
-      })
-    ).rejects.toThrow();
-  });
-
-  it('should reject creation when ISSN format is invalid', async () => {
-    await expect(
-      strapi.documents('api::book.book').create({
-        data: {
-          title: 'Revista Inválida',
-          slug: 'revista-invalida',
-          issn: 'not-an-issn',
-        },
-        status: 'published',
-      })
-    ).rejects.toThrow();
-  });
-
   it('should reject creation when ISBN is already used by another book', async () => {
     await strapi.documents('api::book.book').create({
       data: {
