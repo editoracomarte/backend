@@ -82,7 +82,7 @@ describe('GET /api/books/featured', () => {
     expect(res.body.data).toHaveLength(5);
   });
 
-  it('returns only id, documentId, title, slug and publishing_year', async () => {
+  it('returns only id, documentId, title, slug, publishing_year and cover', async () => {
     await createAndPublishBook('Unica', 2024);
 
     const res = await request(strapi.server.httpServer)
@@ -96,6 +96,26 @@ describe('GET /api/books/featured', () => {
       title: 'Unica',
       slug: 'unica',
       publishing_year: 2024,
+      cover: { url: expect.any(String) },
     });
+  });
+
+  it('returns the cover url of each featured book', async () => {
+    const coverId = await createUploadFile(strapi, {
+      name: 'unica.jpg',
+      hash: 'unica_cover',
+      url: '/uploads/unica_cover.jpg',
+    });
+    const doc = await strapi.documents('api::book.book').create({
+      data: { title: 'Com Capa', slug: 'com-capa', publishing_year: 2024, cover: coverId },
+    });
+    await strapi.documents('api::book.book').publish({ documentId: doc.documentId });
+
+    const res = await request(strapi.server.httpServer)
+      .get('/api/books/featured')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(res.body.data[0].cover).toEqual({ url: '/uploads/unica_cover.jpg' });
   });
 });

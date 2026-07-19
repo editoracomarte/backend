@@ -29,9 +29,19 @@ export default factories.createCoreService('api::book.book', ({ strapi }) => ({
       status: 'published',
       sort: 'publishing_year:desc',
       fields: ['title', 'slug', 'publishing_year'],
+      populate: { cover: { fields: ['url'] as ['url'] } },
     });
 
-    return selectFeatured(allBooks);
+    const shaped = allBooks.map((b) => ({
+      id: b.id,
+      documentId: b.documentId,
+      title: b.title,
+      slug: b.slug,
+      publishing_year: b.publishing_year ?? null,
+      cover: pickCoverUrl(b.cover),
+    }));
+
+    return selectFeatured(shaped);
   },
 
   /**
