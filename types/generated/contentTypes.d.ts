@@ -457,11 +457,11 @@ export interface ApiBookBook extends Struct.CollectionTypeSchema {
     cover_url: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    description: Schema.Attribute.RichText;
+    description: Schema.Attribute.Blocks;
     format: Schema.Attribute.String;
     genres: Schema.Attribute.Relation<'manyToMany', 'api::genre.genre'>;
-    isbn: Schema.Attribute.String;
-    issn: Schema.Attribute.String;
+    isbn: Schema.Attribute.String & Schema.Attribute.Unique;
+    issn: Schema.Attribute.String & Schema.Attribute.Unique;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::book.book'> &
       Schema.Attribute.Private;

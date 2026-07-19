@@ -20,16 +20,18 @@
       "required": true
     },
     "description": {
-      "type": "richtext"
+      "type": "blocks"
     },
     "format": {
       "type": "string"
     },
     "isbn": {
-      "type": "string"
+      "type": "string",
+      "unique": true
     },
     "issn": {
-      "type": "string"
+      "type": "string",
+      "unique": true
     },
     "page_num": {
       "type": "integer"
