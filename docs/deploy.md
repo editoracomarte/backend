@@ -82,7 +82,7 @@ somem da vista.
 
 ### 3. Criar o `.env`
 
-A partir do **[.env.production.example](.env.production.example)**, com secrets
+A partir do **[.env.production.example](../.env.production.example)**, com secrets
 **novos gerados na VM** — nunca reaproveitar os de dev:
 
 ```sh
@@ -146,7 +146,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST https://comarte.eca.usp.br/admi
 
 > A partir do passo 5 o site **já está público**, com o banco vazio e **zero
 > admins** — a janela de sequestro do super admin fica aberta até o passo 9. O
-> que a fecha é **uma única linha** do [docker/nginx.conf](docker/nginx.conf)
+> que a fecha é **uma única linha** do [docker/nginx.conf](../docker/nginx.conf)
 > (`location = /admin/register-admin { return 404; }`). Se vier `200` ou `400`
 > em vez de `404`, **pare o deploy**.
 
@@ -157,7 +157,7 @@ docker compose exec strapi npx strapi routes:list
 ```
 
 Todo prefixo de raiz que aparecer ali precisa estar no `location ~ ^/(...)` do
-[docker/nginx.conf](docker/nginx.conf). (Exceção conhecida: `/_health`, que é
+[docker/nginx.conf](../docker/nginx.conf). (Exceção conhecida: `/_health`, que é
 deliberadamente deixado de fora — ver o comentário no `nginx.conf`.)
 
 ### 8. Import do seed — manualmente, uma única vez
@@ -198,7 +198,7 @@ Abra `https://comarte.eca.usp.br/admin`, logue, e navegue pelo Content Manager
 **com o DevTools aberto na aba Network**.
 
 **Esperado:** todo XHR responde `application/json`. Se algum receber `text/html`
-em vez de JSON, um prefixo está faltando no nginx (ver [docker/nginx.conf](docker/nginx.conf)).
+em vez de JSON, um prefixo está faltando no nginx (ver [docker/nginx.conf](../docker/nginx.conf)).
 
 ### 11. Conferir a flag `Secure` no cookie de sessão
 
@@ -243,7 +243,7 @@ backup.
 
 Instalar um plugin novo no Strapi adiciona um prefixo de raiz novo, e o painel
 para de funcionar em produção até que esse prefixo entre no `location ~ ^/(...)`
-do [docker/nginx.conf](docker/nginx.conf).
+do [docker/nginx.conf](../docker/nginx.conf).
 
 - **Sintoma:** o painel carrega mas as telas quebram; o DevTools mostra XHR
   recebendo HTML (o `index.html` do SPA) no lugar de JSON.
