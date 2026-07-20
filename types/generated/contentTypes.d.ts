@@ -500,7 +500,7 @@ export interface ApiBookBook extends Struct.CollectionTypeSchema {
   attributes: {
     authors: Schema.Attribute.Relation<'manyToMany', 'api::author.author'>;
     collections: Schema.Attribute.Relation<'manyToMany', 'api::collection.collection'>;
-    cover_url: Schema.Attribute.String;
+    cover: Schema.Attribute.Media<'images' | 'files'> & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     description: Schema.Attribute.Blocks;
@@ -514,7 +514,7 @@ export interface ApiBookBook extends Struct.CollectionTypeSchema {
     page_num: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     publishing_year: Schema.Attribute.Integer;
-    sample_url: Schema.Attribute.String;
+    sample: Schema.Attribute.Media<'files'>;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
     store_url: Schema.Attribute.String;
     title: Schema.Attribute.String & Schema.Attribute.Required;

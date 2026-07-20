@@ -2,13 +2,16 @@ import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
 import { createReadOnlyToken } from '../helpers/tokens';
+import { createUploadFile } from '../helpers/uploads';
 
 let strapi: Core.Strapi;
 let token: string;
+let coverId: number;
 
 beforeAll(async () => {
   strapi = await setupStrapi();
   token = await createReadOnlyToken(strapi);
+  coverId = await createUploadFile(strapi);
 });
 
 afterAll(async () => {
@@ -58,6 +61,7 @@ interface BookRels {
   collections?: string[];
   genres?: string[];
   year?: number;
+  cover?: number;
 }
 
 async function createBook(title: string, rels: BookRels = {}) {
@@ -69,6 +73,7 @@ async function createBook(title: string, rels: BookRels = {}) {
       authors: rels.authors ?? [],
       collections: rels.collections ?? [],
       genres: rels.genres ?? [],
+      cover: rels.cover ?? coverId,
     },
   });
   await strapi.documents('api::book.book').publish({ documentId: doc.documentId });
@@ -151,6 +156,35 @@ describe('GET /api/books/:slug/related', () => {
       title: 'Vizinha',
       slug: 'vizinha',
       publishing_year: 2024,
+      cover: { url: expect.any(String) },
+    });
+  });
+
+  it('returns the cover url for both ranked and fallback books', async () => {
+    const author = await createAuthor('Ana');
+    await createBook('Base', { authors: [author] });
+    const ranked = await createUploadFile(strapi, {
+      name: 'ranked.jpg',
+      hash: 'ranked_cover',
+      url: '/uploads/ranked_cover.jpg',
+    });
+    const fallbackCover = await createUploadFile(strapi, {
+      name: 'fallback.jpg',
+      hash: 'fallback_cover',
+      url: '/uploads/fallback_cover.jpg',
+    });
+    await createBook('Vizinha', { authors: [author], year: 2024, cover: ranked });
+    await createBook('Filler', { year: 2023, cover: fallbackCover });
+
+    const res = await get('base').expect(200);
+
+    expect(res.body.data[0]).toMatchObject({
+      slug: 'vizinha',
+      cover: { url: '/uploads/ranked_cover.jpg' },
+    });
+    expect(res.body.data[1]).toMatchObject({
+      slug: 'filler',
+      cover: { url: '/uploads/fallback_cover.jpg' },
     });
   });
 

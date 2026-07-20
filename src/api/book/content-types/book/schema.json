@@ -11,13 +11,19 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
     "slug": {
       "type": "uid",
       "required": true
     },
-    "title": {
-      "type": "string",
-      "required": true
+    "authors": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::author.author",
+      "mappedBy": "books"
     },
     "description": {
       "type": "blocks"
@@ -39,20 +45,8 @@
     "publishing_year": {
       "type": "integer"
     },
-    "cover_url": {
-      "type": "string"
-    },
-    "sample_url": {
-      "type": "string"
-    },
     "store_url": {
       "type": "string"
-    },
-    "authors": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::author.author",
-      "mappedBy": "books"
     },
     "collections": {
       "type": "relation",
@@ -65,6 +59,17 @@
       "relation": "manyToMany",
       "target": "api::genre.genre",
       "inversedBy": "books"
+    },
+    "cover": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images", "files"]
+    },
+    "sample": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["files"]
     }
   }
 }

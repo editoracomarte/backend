@@ -2,14 +2,17 @@ import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
 import { createReadOnlyToken } from '../helpers/tokens';
+import { createUploadFile } from '../helpers/uploads';
 
 describe('GET /api/collection/:slug', () => {
   let strapi: Core.Strapi;
   let token: string;
+  let coverId: number;
 
   beforeAll(async () => {
     strapi = await setupStrapi();
     token = await createReadOnlyToken(strapi);
+    coverId = await createUploadFile(strapi);
   });
 
   afterAll(async () => {
@@ -27,7 +30,7 @@ describe('GET /api/collection/:slug', () => {
 
   async function createPublishedBook(title: string, slug: string) {
     const doc = await strapi.documents('api::book.book').create({
-      data: { title, slug },
+      data: { title, slug, cover: coverId },
     });
     await strapi.documents('api::book.book').publish({ documentId: doc.documentId });
     return doc;
@@ -67,6 +70,7 @@ describe('GET /api/collection/:slug', () => {
         isbn: '9788535910662',
         format: 'Livro',
         publishing_year: 1881,
+        cover: coverId,
       },
     });
     await strapi.documents('api::book.book').publish({ documentId: book.documentId });

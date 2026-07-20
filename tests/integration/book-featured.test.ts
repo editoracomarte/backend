@@ -2,13 +2,16 @@ import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
 import { createReadOnlyToken } from '../helpers/tokens';
+import { createUploadFile } from '../helpers/uploads';
 
 let strapi: Core.Strapi;
 let token: string;
+let coverId: number;
 
 beforeAll(async () => {
   strapi = await setupStrapi();
   token = await createReadOnlyToken(strapi);
+  coverId = await createUploadFile(strapi);
 });
 
 afterAll(async () => {
@@ -26,6 +29,7 @@ async function createAndPublishBook(title: string, publishing_year: number) {
       title,
       slug: title.toLowerCase().replace(/\s/g, '-'),
       publishing_year,
+      cover: coverId,
     },
   });
   await strapi.documents('api::book.book').publish({ documentId: doc.documentId });
@@ -78,7 +82,7 @@ describe('GET /api/books/featured', () => {
     expect(res.body.data).toHaveLength(5);
   });
 
-  it('returns only id, documentId, title, slug and publishing_year', async () => {
+  it('returns only id, documentId, title, slug, publishing_year and cover', async () => {
     await createAndPublishBook('Unica', 2024);
 
     const res = await request(strapi.server.httpServer)
@@ -92,6 +96,26 @@ describe('GET /api/books/featured', () => {
       title: 'Unica',
       slug: 'unica',
       publishing_year: 2024,
+      cover: { url: expect.any(String) },
     });
+  });
+
+  it('returns the cover url of each featured book', async () => {
+    const coverId = await createUploadFile(strapi, {
+      name: 'unica.jpg',
+      hash: 'unica_cover',
+      url: '/uploads/unica_cover.jpg',
+    });
+    const doc = await strapi.documents('api::book.book').create({
+      data: { title: 'Com Capa', slug: 'com-capa', publishing_year: 2024, cover: coverId },
+    });
+    await strapi.documents('api::book.book').publish({ documentId: doc.documentId });
+
+    const res = await request(strapi.server.httpServer)
+      .get('/api/books/featured')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(res.body.data[0].cover).toEqual({ url: '/uploads/unica_cover.jpg' });
   });
 });

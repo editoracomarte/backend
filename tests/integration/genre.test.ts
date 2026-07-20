@@ -2,14 +2,17 @@ import request from 'supertest';
 import type { Core } from '@strapi/strapi';
 import { setupStrapi, cleanupStrapi } from '../helpers/strapi';
 import { createReadOnlyToken } from '../helpers/tokens';
+import { createUploadFile } from '../helpers/uploads';
 
 describe('Genre public API', () => {
   let strapi: Core.Strapi;
   let token: string;
+  let coverId: number;
 
   beforeAll(async () => {
     strapi = await setupStrapi();
     token = await createReadOnlyToken(strapi);
+    coverId = await createUploadFile(strapi);
   });
 
   afterAll(async () => {
@@ -76,7 +79,7 @@ describe('Genre public API', () => {
 
   it('should expose associated books (manyToMany) when populated', async () => {
     const book = await strapi.documents('api::book.book').create({
-      data: { title: 'Dom Casmurro', slug: 'dom-casmurro' },
+      data: { title: 'Dom Casmurro', slug: 'dom-casmurro', cover: coverId },
       status: 'published',
     });
     const genre = await strapi.documents('api::genre.genre').create({

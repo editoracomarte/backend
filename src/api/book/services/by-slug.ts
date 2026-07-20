@@ -16,6 +16,7 @@
  */
 export function bookBySlugQuery(slug: string) {
   const relationFields = ['name', 'slug'] as ['name', 'slug'];
+  const mediaFields = ['url'] as ['url'];
 
   return {
     status: 'published' as const,
@@ -29,11 +30,24 @@ export function bookBySlugQuery(slug: string) {
       'format',
       'page_num',
       'publishing_year',
-    ] as ['title', 'slug', 'description', 'isbn', 'issn', 'format', 'page_num', 'publishing_year'],
+      'store_url',
+    ] as [
+      'title',
+      'slug',
+      'description',
+      'isbn',
+      'issn',
+      'format',
+      'page_num',
+      'publishing_year',
+      'store_url',
+    ],
     populate: {
       authors: { fields: relationFields },
       collections: { fields: relationFields },
       genres: { fields: relationFields },
+      cover: { fields: mediaFields },
+      sample: { fields: mediaFields },
     },
     limit: 1,
   };
