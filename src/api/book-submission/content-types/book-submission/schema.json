@@ -1,0 +1,18 @@
+{
+  "kind": "singleType",
+  "collectionName": "book_submissions",
+  "info": {
+    "singularName": "book-submission",
+    "pluralName": "book-submissions",
+    "displayName": "Publique (Seleção de originais)"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "content": {
+      "type": "blocks"
+    }
+  }
+}
