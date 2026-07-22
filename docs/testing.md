@@ -3,8 +3,8 @@
 A suíte tem duas camadas.
 
 - **Testes unitários** (`tests/unit/`) — validações puras e helpers que não
-  dependem do Strapi (ex.: regex de ISBN/ISSN do schema, scoring de obras
-  relacionadas, seleção de destaques, parsing do feed do Instagram). Rodam em
+  dependem do Strapi (ex.: scoring de obras relacionadas, seleção de destaques,
+  parsing do feed do Instagram). Rodam em
   milissegundos, sem subir nada.
 - **Testes de integração** (`tests/integration/`) — sobem uma instância do Strapi
   com banco SQLite descartável (`.tmp/test.db`, recriado a cada run) e exercitam
