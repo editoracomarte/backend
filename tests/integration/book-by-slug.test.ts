@@ -143,7 +143,9 @@ describe('GET /api/book/:slug', () => {
       data: {
         name: 'Machado de Assis',
         slug: 'machado-de-assis',
-        description: 'bio',
+        description: [
+          { type: 'paragraph' as const, children: [{ type: 'text' as const, text: 'bio' }] },
+        ],
       },
     });
     await strapi.documents('api::author.author').publish({ documentId: author.documentId });

@@ -38,7 +38,12 @@ describe('GET /api/author/:slug', () => {
 
   it('returns name, description, lattes, orcid and books[{ title, slug }] for a valid slug', async () => {
     const book = await createPublishedBook('Dom Casmurro', 'dom-casmurro');
-    const description = 'Escritor brasileiro.';
+    const description = [
+      {
+        type: 'paragraph' as const,
+        children: [{ type: 'text' as const, text: 'Escritor brasileiro.' }],
+      },
+    ];
     const lattes = 'http://lattes.cnpq.br/1234567890123456';
     const orcid = 'https://orcid.org/0000-0002-1825-0097';
     const author = await strapi.documents('api::author.author').create({

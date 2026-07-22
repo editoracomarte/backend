@@ -38,7 +38,12 @@ describe('GET /api/collection/:slug', () => {
 
   it('returns name, description and books[{ title, slug }] for a valid slug', async () => {
     const book = await createPublishedBook('Dom Casmurro', 'dom-casmurro');
-    const description = 'Clássicos da literatura brasileira.';
+    const description = [
+      {
+        type: 'paragraph' as const,
+        children: [{ type: 'text' as const, text: 'Clássicos da literatura brasileira.' }],
+      },
+    ];
     const collection = await strapi.documents('api::collection.collection').create({
       data: {
         name: 'Clássicos Brasileiros',
