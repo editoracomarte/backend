@@ -216,7 +216,7 @@ Author.
 
 ### 13. Auditar a autorização da content API
 
-O site autentica por **API token** (não pelo papel Public — um `GET /api/obras`
+O site autentica por **API token** (não pelo papel Public — um `GET /api/books`
 sem credencial responde `403`). Duas conferências:
 
 - **O API token do front** (**Settings → API Tokens**): confirme que é do tipo
