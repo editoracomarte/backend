@@ -24,14 +24,14 @@ if [ ! -f "$EXPORT_FILE" ]; then
   exit 1
 fi
 
-OBRAS=$(PGPASSWORD="$DATABASE_PASSWORD" psql \
+BOOKS=$(PGPASSWORD="$DATABASE_PASSWORD" psql \
   -h "$DATABASE_HOST" -p "${DATABASE_PORT:-5432}" \
   -U "$DATABASE_USERNAME" -d "$DATABASE_NAME" \
-  -tAc "SELECT count(*) FROM obras" 2>/dev/null || echo 0)
+  -tAc "SELECT count(*) FROM books" 2>/dev/null || echo 0)
 
-# ${OBRAS:-0}: an empty value makes `[ "" -gt 0 ]` abort the script under `set -e`.
-if [ "${OBRAS:-0}" -gt 0 ]; then
-  echo "Seed: skipped (database already has $OBRAS obras)."
+# ${BOOKS:-0}: an empty value makes `[ "" -gt 0 ]` abort the script under `set -e`.
+if [ "${BOOKS:-0}" -gt 0 ]; then
+  echo "Seed: skipped (database already has $BOOKS books)."
   exec "$@"
 fi
 

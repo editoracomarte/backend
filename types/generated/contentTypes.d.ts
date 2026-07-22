@@ -438,32 +438,6 @@ export interface ApiAuthorAuthor extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiAutorAutor extends Struct.CollectionTypeSchema {
-  collectionName: 'autores';
-  info: {
-    displayName: 'Autor';
-    pluralName: 'autores';
-    singularName: 'autor';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    descricao: Schema.Attribute.Blocks;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::autor.autor'> &
-      Schema.Attribute.Private;
-    nome: Schema.Attribute.String & Schema.Attribute.Required;
-    obras: Schema.Attribute.Relation<'manyToMany', 'api::obra.obra'>;
-    publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'nome'> & Schema.Attribute.Required;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-  };
-}
-
 export interface ApiBookSubmissionBookSubmission extends Struct.SingleTypeSchema {
   collectionName: 'book_submissions';
   info: {
@@ -523,32 +497,6 @@ export interface ApiBookBook extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiColecaoColecao extends Struct.CollectionTypeSchema {
-  collectionName: 'colecoes';
-  info: {
-    displayName: 'Cole\u00E7\u00E3o';
-    pluralName: 'colecoes';
-    singularName: 'colecao';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    descricao: Schema.Attribute.Blocks;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::colecao.colecao'> &
-      Schema.Attribute.Private;
-    nome: Schema.Attribute.String & Schema.Attribute.Required;
-    obras: Schema.Attribute.Relation<'manyToMany', 'api::obra.obra'>;
-    publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'nome'>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-  };
-}
-
 export interface ApiCollectionCollection extends Struct.CollectionTypeSchema {
   collectionName: 'collections';
   info: {
@@ -597,31 +545,6 @@ export interface ApiFooterFooter extends Struct.SingleTypeSchema {
     organization: Schema.Attribute.String;
     phone: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-  };
-}
-
-export interface ApiGeneroGenero extends Struct.CollectionTypeSchema {
-  collectionName: 'generos';
-  info: {
-    displayName: 'G\u00EAnero';
-    pluralName: 'generos';
-    singularName: 'genero';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::genero.genero'> &
-      Schema.Attribute.Private;
-    nome: Schema.Attribute.String & Schema.Attribute.Required & Schema.Attribute.Unique;
-    obras: Schema.Attribute.Relation<'manyToMany', 'api::obra.obra'>;
-    publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'nome'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
   };
@@ -678,39 +601,6 @@ export interface ApiInstagramInstagram extends Struct.SingleTypeSchema {
         number
       >;
     publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-  };
-}
-
-export interface ApiObraObra extends Struct.CollectionTypeSchema {
-  collectionName: 'obras';
-  info: {
-    displayName: 'Obra';
-    pluralName: 'obras';
-    singularName: 'obra';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    anoDePublicacao: Schema.Attribute.Integer;
-    autoria: Schema.Attribute.Relation<'manyToMany', 'api::autor.autor'>;
-    colecao: Schema.Attribute.Relation<'manyToMany', 'api::colecao.colecao'>;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    descricao: Schema.Attribute.Blocks;
-    formato: Schema.Attribute.String;
-    generos: Schema.Attribute.Relation<'manyToMany', 'api::genero.genero'>;
-    isbn: Schema.Attribute.String & Schema.Attribute.Unique;
-    issn: Schema.Attribute.String & Schema.Attribute.Unique;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::obra.obra'> &
-      Schema.Attribute.Private;
-    numeroDePaginas: Schema.Attribute.Integer;
-    publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'titulo'> & Schema.Attribute.Required;
-    titulo: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
   };
@@ -1147,16 +1037,12 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::about-us.about-us': ApiAboutUsAboutUs;
       'api::author.author': ApiAuthorAuthor;
-      'api::autor.autor': ApiAutorAutor;
       'api::book-submission.book-submission': ApiBookSubmissionBookSubmission;
       'api::book.book': ApiBookBook;
-      'api::colecao.colecao': ApiColecaoColecao;
       'api::collection.collection': ApiCollectionCollection;
       'api::footer.footer': ApiFooterFooter;
-      'api::genero.genero': ApiGeneroGenero;
       'api::genre.genre': ApiGenreGenre;
       'api::instagram.instagram': ApiInstagramInstagram;
-      'api::obra.obra': ApiObraObra;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

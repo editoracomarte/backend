@@ -37,7 +37,7 @@ Backend headless CMS em **Strapi 5** (TypeScript), com PostgreSQL em produção 
 
 ### Content types (`src/api/`)
 
-Os modelos foram migrados de português para inglês. **Tipos canônicos:** `book`, `author`, `collection`, `genre` (collection types), além dos single types `instagram`, `footer`, `about-us`, `book-submission`. As pastas em português que ainda existam (`obra`, `autor`, `colecao`, `genero`) são **legado em remoção — não construa sobre elas**.
+Os modelos foram migrados de português para inglês. **Tipos canônicos:** `book`, `author`, `collection`, `genre` (collection types), além dos single types `instagram`, `footer`, `about-us`, `book-submission`.
 
 - Catálogo completo, campo a campo: [docs/content-types.md](docs/content-types.md)
 - Endpoints que o front consome (rotas customizadas + rotas core de lista/single type): [docs/api.md](docs/api.md)
