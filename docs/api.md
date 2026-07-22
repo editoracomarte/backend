@@ -46,6 +46,23 @@ curl http://localhost:1337/api/books/featured \
   -H "Authorization: Bearer <api-token>"
 ```
 
+**Resposta** (12 itens; um só mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 235,
+      "documentId": "kssqw8yqweiwxcdddxh6mbyt",
+      "title": "Rastros",
+      "slug": "rastros",
+      "publishing_year": 2019,
+      "cover": { "url": "/uploads/Rastros_b3e834505b.webp" }
+    }
+  ]
+}
+```
+
 ---
 
 ## `GET /api/books/:slug/related`
@@ -89,12 +106,12 @@ incluídas), que entram com `score: 0`. A rota devolve sempre a quantidade pedid
 {
   "data": [
     {
-      "id": 29,
-      "documentId": "uv3d1i9gne4004hcfs7kwve4",
-      "title": "Assalto ao Céu",
-      "slug": "assalto-ao-ceu",
+      "id": 95,
+      "documentId": "etg9plblr9ro0bhsdgq3h5v8",
+      "title": "Desavessos",
+      "slug": "desavessos",
       "publishing_year": 2014,
-      "cover": { "url": "/uploads/assalto_ao_ceu.jpg" }
+      "cover": { "url": "/uploads/Desavessos_9061f4c3e6.webp" }
     }
   ]
 }
@@ -120,9 +137,67 @@ Detalhes de uma obra publicada a partir da sua `slug`.
   `slug`), `cover` e `sample` (cada um com `url`).
 
 ```bash
-curl http://localhost:1337/api/book/assalto-ao-ceu \
+curl http://localhost:1337/api/book/heleny-guariba-destinos-sequestrados \
   -H "Authorization: Bearer <api-token>"
 ```
+
+**Resposta:**
+
+```json
+{
+  "data": {
+    "id": 156,
+    "documentId": "a4mo3cilx235e4pk30rf8opb",
+    "title": "Heleny Guariba: Destinos Sequestrados",
+    "slug": "heleny-guariba-destinos-sequestrados",
+    "description": [{ "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }],
+    "isbn": "978-65-89321-20-0",
+    "issn": null,
+    "format": "13 x 22 cm",
+    "page_num": 272,
+    "publishing_year": 2025,
+    "store_url": "https://www.edusp.com.br/loja/produto/1848/heleny-guariba--destinos-sequestrados",
+    "authors": [
+      {
+        "id": 132,
+        "documentId": "d6ur3qctuh60hk7akqli6v1c",
+        "name": "José Armando Pereira Silva",
+        "slug": "jose-armando-pereira-silva"
+      }
+    ],
+    "collections": [
+      {
+        "id": 14,
+        "documentId": "gex7eadkfdhifs3siy6maov0",
+        "name": "Memória Militante",
+        "slug": "memoria-militante"
+      }
+    ],
+    "genres": [
+      {
+        "id": 2,
+        "documentId": "fjwvnkgeukoo8xrk1rfdoke4",
+        "name": "Comunicação",
+        "slug": "comunicacao"
+      }
+    ],
+    "cover": {
+      "id": 98,
+      "documentId": "xn8m8j71oepcjjwru3y7gno6",
+      "url": "/uploads/Memoria_Militante_Heleny_Guariba_Destinos_Sequestrados_d04283c3a3.webp"
+    },
+    "sample": {
+      "id": 99,
+      "documentId": "onl7ko74pqix8dhuacsq1moh",
+      "url": "/uploads/978_65_89321_20_0_Heleny_Guariba_98caa03737.pdf"
+    }
+  }
+}
+```
+
+Nem toda obra tem as três relações: `collections` costuma vir `[]`. Relação
+vazia vem como `[]`, campo escalar não preenchido e mídia ausente vêm como
+`null`.
 
 ---
 
@@ -144,14 +219,26 @@ Detalhes de um autor publicado a partir da sua `slug`, com payload enxuto.
 ```json
 {
   "data": {
+    "id": 52,
+    "documentId": "h8hm7ugms8ax55zduy3v8a9f",
     "name": "Machado de Assis",
     "description": [{ "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }],
     "lattes": "http://lattes.cnpq.br/0000000000000000",
     "orcid": "https://orcid.org/0000-0000-0000-0000",
-    "books": [{ "title": "Dom Casmurro", "slug": "dom-casmurro" }]
+    "books": [
+      {
+        "id": 190,
+        "documentId": "zrjy8mur6wevqopbz3id9bfx",
+        "title": "Dom Casmurro",
+        "slug": "dom-casmurro"
+      }
+    ]
   }
 }
 ```
+
+`id` e `documentId` acompanham toda entidade retornada pelo Strapi (inclusive
+dentro das relações), mesmo quando a rota restringe os campos.
 
 ```bash
 curl http://localhost:1337/api/author/machado-de-assis \
@@ -173,8 +260,29 @@ Detalhes de uma coleção publicada a partir da sua `slug`.
 - `books` populado com `title` e `slug`.
 
 ```bash
-curl http://localhost:1337/api/collection/classicos \
+curl http://localhost:1337/api/collection/primeira-impressao \
   -H "Authorization: Bearer <api-token>"
+```
+
+**Resposta:**
+
+```json
+{
+  "data": {
+    "id": 13,
+    "documentId": "lyzotp1rkcwv0h66xf6fso8s",
+    "name": "Primeira Impressão",
+    "description": [{ "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }],
+    "books": [
+      {
+        "id": 60,
+        "documentId": "aoxmg6wafcl7osc2dnstkm5g",
+        "title": "Av. Marginal",
+        "slug": "av-marginal"
+      }
+    ]
+  }
+}
 ```
 
 ---
@@ -232,15 +340,15 @@ que a listagem exibir.
 
 **Query params úteis:**
 
-| Param                                          | Efeito                                |
-| ---------------------------------------------- | ------------------------------------- |
-| `?fields=title,slug,publishing_year`           | Enxuga os campos escalares retornados |
-| `?populate[cover][fields][0]=url`              | Inclui a URL da capa                  |
-| `?sort=publishing_year:desc`                   | Ordena (ex.: mais recentes primeiro)  |
-| `?pagination[page]=1&pagination[pageSize]=24`  | Paginação                             |
-| `?filters[genres][slug][$eq]=<genre-slug>`     | Filtra por gênero                     |
-| `?filters[collections][slug][$eq]=<coll-slug>` | Filtra por coleção                    |
-| `?filters[title][$containsi]=<termo>`          | Busca por título (case-insensitive)   |
+| Param                                          | Efeito                                                                 |
+| ---------------------------------------------- | ---------------------------------------------------------------------- |
+| `?fields=title,slug,publishing_year`           | Enxuga os campos escalares retornados (`id` e `documentId` vêm sempre) |
+| `?populate[cover][fields][0]=url`              | Inclui a URL da capa                                                   |
+| `?sort=publishing_year:desc`                   | Ordena (ex.: mais recentes primeiro)                                   |
+| `?pagination[page]=1&pagination[pageSize]=24`  | Paginação                                                              |
+| `?filters[genres][slug][$eq]=<genre-slug>`     | Filtra por gênero                                                      |
+| `?filters[collections][slug][$eq]=<coll-slug>` | Filtra por coleção                                                     |
+| `?filters[title][$containsi]=<termo>`          | Busca por título (case-insensitive)                                    |
 
 ```bash
 curl "http://localhost:1337/api/books?fields=title,slug,publishing_year&populate[cover][fields][0]=url&sort=publishing_year:desc&pagination[pageSize]=24" \
@@ -250,6 +358,34 @@ curl "http://localhost:1337/api/books?fields=title,slug,publishing_year&populate
 Retorna somente obras **publicadas**, e o objeto `meta.pagination` com o total de
 páginas.
 
+`fields` e `populate[…][fields]` restringem só os campos de conteúdo: cada
+entidade — inclusive a mídia populada — continua vindo com `id` e `documentId`.
+No exemplo acima, `cover` sai como `{ id, documentId, url }`.
+
+**Resposta** (um item da página mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 58,
+      "documentId": "e5c6gxsm8l4m9srcaqqg2led",
+      "title": "Audiolivros e Edição",
+      "slug": "audiolivros-e-edicao",
+      "publishing_year": null,
+      "cover": {
+        "id": 44,
+        "documentId": "sjgk29rj937ea855v5by0msm",
+        "url": "/uploads/00_Imagem_nao_disponivel_e989d2b8e4.webp"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 24, "pageCount": 6, "total": 137 }
+  }
+}
+```
+
 ## `GET /api/collections`
 
 Índice de coleções.
@@ -257,6 +393,24 @@ páginas.
 ```bash
 curl "http://localhost:1337/api/collections?fields=name,slug" \
   -H "Authorization: Bearer <api-token>"
+```
+
+**Resposta** (um item mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 13,
+      "documentId": "lyzotp1rkcwv0h66xf6fso8s",
+      "name": "Primeira Impressão",
+      "slug": "primeira-impressao"
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 25, "pageCount": 1, "total": 10 }
+  }
+}
 ```
 
 Para trazer as obras de cada coleção: `?populate[books][fields][0]=title&populate[books][fields][1]=slug`.
@@ -271,6 +425,24 @@ curl "http://localhost:1337/api/genres?fields=name,slug" \
   -H "Authorization: Bearer <api-token>"
 ```
 
+**Resposta** (um item mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 13,
+      "documentId": "iodnv5evtg4wgnlg3fn3asxp",
+      "name": "Poesia",
+      "slug": "poesia"
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 25, "pageCount": 1, "total": 18 }
+  }
+}
+```
+
 ## `GET /api/authors`
 
 Lista de autores.
@@ -278,6 +450,24 @@ Lista de autores.
 ```bash
 curl "http://localhost:1337/api/authors?fields=name,slug" \
   -H "Authorization: Bearer <api-token>"
+```
+
+**Resposta** (um item da página mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 35,
+      "documentId": "t0gz3obnu5vhnbklg13ltapz",
+      "name": "Atílio Avancini",
+      "slug": "atilio-avancini"
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 25, "pageCount": 6, "total": 136 }
+  }
+}
 ```
 
 ---
@@ -302,13 +492,21 @@ curl "http://localhost:1337/api/footer?populate=address" \
 ```json
 {
   "data": {
+    "id": 2,
+    "documentId": "ckad59crsjtw2f02lk65m5hq",
     "phone": "(11) 0000-0000",
     "email": "contato@comarte.eca.usp.br",
     "organization": "Com Arte",
     "copyright": "© Com Arte",
+    "createdAt": "2026-07-19T20:29:56.153Z",
+    "updatedAt": "2026-07-19T20:29:56.153Z",
+    "publishedAt": "2026-07-19T20:29:56.165Z",
     "address": {
-      "street": "Av. Prof. Lúcio Martins Rodrigues",
-      "district": "Butantã",
+      "id": 2,
+      "street": "Av. Prof. Lúcio Martins Rodrigues, 443",
+      "complement1": "Prédio 2",
+      "complement2": "Sala 10",
+      "district": "Cidade Universitária",
       "cep": "05508-020",
       "city": "São Paulo",
       "state": "SP",
@@ -317,6 +515,10 @@ curl "http://localhost:1337/api/footer?populate=address" \
   }
 }
 ```
+
+Por ser rota core, o payload vem cru: além dos campos editáveis vêm `id`,
+`documentId` e os timestamps (`createdAt`, `updatedAt`, `publishedAt`), mais um
+`meta: {}` ao lado de `data`. Use `?fields=` para enxugar.
 
 ## `GET /api/about-us`
 
@@ -327,6 +529,29 @@ curl http://localhost:1337/api/about-us \
   -H "Authorization: Bearer <api-token>"
 ```
 
+**Resposta:**
+
+```json
+{
+  "data": {
+    "id": 2,
+    "documentId": "cs949gxdx7adsewgqnoqi0cn",
+    "content": [
+      {
+        "type": "heading",
+        "level": 1,
+        "children": [{ "type": "text", "text": "Quem somos" }]
+      },
+      { "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }
+    ],
+    "createdAt": "2026-07-19T20:29:56.153Z",
+    "updatedAt": "2026-07-19T20:29:56.153Z",
+    "publishedAt": "2026-07-19T20:29:56.165Z"
+  },
+  "meta": {}
+}
+```
+
 ## `GET /api/book-submission`
 
 Conteúdo da página **Publique** (seleção de originais): um campo `content` em
@@ -335,4 +560,27 @@ blocks.
 ```bash
 curl http://localhost:1337/api/book-submission \
   -H "Authorization: Bearer <api-token>"
+```
+
+**Resposta:**
+
+```json
+{
+  "data": {
+    "id": 2,
+    "documentId": "yfashi7zn17alw9jay8ptj1n",
+    "content": [
+      {
+        "type": "heading",
+        "level": 1,
+        "children": [{ "type": "text", "text": "Seleção de Originais" }]
+      },
+      { "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }
+    ],
+    "createdAt": "2026-07-19T20:29:56.153Z",
+    "updatedAt": "2026-07-19T20:29:56.153Z",
+    "publishedAt": "2026-07-19T20:29:56.165Z"
+  },
+  "meta": {}
+}
 ```
