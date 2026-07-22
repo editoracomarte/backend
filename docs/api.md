@@ -137,7 +137,7 @@ Detalhes de uma obra publicada a partir da sua `slug`.
   `slug`), `cover` e `sample` (cada um com `url`).
 
 ```bash
-curl http://localhost:1337/api/book/rastros \
+curl http://localhost:1337/api/book/heleny-guariba-destinos-sequestrados \
   -H "Authorization: Bearer <api-token>"
 ```
 
@@ -146,49 +146,58 @@ curl http://localhost:1337/api/book/rastros \
 ```json
 {
   "data": {
-    "id": 235,
-    "documentId": "kssqw8yqweiwxcdddxh6mbyt",
-    "title": "Rastros",
-    "slug": "rastros",
+    "id": 156,
+    "documentId": "a4mo3cilx235e4pk30rf8opb",
+    "title": "Heleny Guariba: Destinos Sequestrados",
+    "slug": "heleny-guariba-destinos-sequestrados",
     "description": [{ "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }],
-    "isbn": "978-85-7166-184-4",
+    "isbn": "978-65-89321-20-0",
     "issn": null,
-    "format": "21 X 19 cm",
-    "page_num": 136,
-    "publishing_year": 2019,
-    "store_url": null,
+    "format": "13 x 22 cm",
+    "page_num": 272,
+    "publishing_year": 2025,
+    "store_url": "https://www.edusp.com.br/loja/produto/1848/heleny-guariba--destinos-sequestrados",
     "authors": [
       {
-        "id": 35,
-        "documentId": "t0gz3obnu5vhnbklg13ltapz",
-        "name": "Atílio Avancini",
-        "slug": "atilio-avancini"
+        "id": 132,
+        "documentId": "d6ur3qctuh60hk7akqli6v1c",
+        "name": "José Armando Pereira Silva",
+        "slug": "jose-armando-pereira-silva"
       }
     ],
-    "collections": [],
+    "collections": [
+      {
+        "id": 14,
+        "documentId": "gex7eadkfdhifs3siy6maov0",
+        "name": "Memória Militante",
+        "slug": "memoria-militante"
+      }
+    ],
     "genres": [
       {
-        "id": 13,
-        "documentId": "iodnv5evtg4wgnlg3fn3asxp",
-        "name": "Poesia",
-        "slug": "poesia"
+        "id": 2,
+        "documentId": "fjwvnkgeukoo8xrk1rfdoke4",
+        "name": "Comunicação",
+        "slug": "comunicacao"
       }
     ],
     "cover": {
-      "id": 164,
-      "documentId": "d8ekcqm57pvzk0ij17mqsar3",
-      "url": "/uploads/Rastros_b3e834505b.webp"
+      "id": 98,
+      "documentId": "xn8m8j71oepcjjwru3y7gno6",
+      "url": "/uploads/Memoria_Militante_Heleny_Guariba_Destinos_Sequestrados_d04283c3a3.webp"
     },
     "sample": {
-      "id": 165,
-      "documentId": "wavtlkcitabqogbv77wvwhtr",
-      "url": "/uploads/978_85_7166_184_4_Rastros_9782df84e4.pdf"
+      "id": 99,
+      "documentId": "onl7ko74pqix8dhuacsq1moh",
+      "url": "/uploads/978_65_89321_20_0_Heleny_Guariba_98caa03737.pdf"
     }
   }
 }
 ```
 
-Relações vazias vêm como `[]` e mídia ausente como `null`.
+Nem toda obra tem as três relações: `collections` costuma vir `[]`. Relação
+vazia vem como `[]`, campo escalar não preenchido e mídia ausente vêm como
+`null`.
 
 ---
 
