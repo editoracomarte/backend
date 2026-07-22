@@ -144,14 +144,26 @@ Detalhes de um autor publicado a partir da sua `slug`, com payload enxuto.
 ```json
 {
   "data": {
+    "id": 52,
+    "documentId": "h8hm7ugms8ax55zduy3v8a9f",
     "name": "Machado de Assis",
     "description": [{ "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }],
     "lattes": "http://lattes.cnpq.br/0000000000000000",
     "orcid": "https://orcid.org/0000-0000-0000-0000",
-    "books": [{ "title": "Dom Casmurro", "slug": "dom-casmurro" }]
+    "books": [
+      {
+        "id": 190,
+        "documentId": "zrjy8mur6wevqopbz3id9bfx",
+        "title": "Dom Casmurro",
+        "slug": "dom-casmurro"
+      }
+    ]
   }
 }
 ```
+
+`id` e `documentId` acompanham toda entidade retornada pelo Strapi (inclusive
+dentro das relações), mesmo quando a rota restringe os campos.
 
 ```bash
 curl http://localhost:1337/api/author/machado-de-assis \
@@ -232,15 +244,15 @@ que a listagem exibir.
 
 **Query params úteis:**
 
-| Param                                          | Efeito                                |
-| ---------------------------------------------- | ------------------------------------- |
-| `?fields=title,slug,publishing_year`           | Enxuga os campos escalares retornados |
-| `?populate[cover][fields][0]=url`              | Inclui a URL da capa                  |
-| `?sort=publishing_year:desc`                   | Ordena (ex.: mais recentes primeiro)  |
-| `?pagination[page]=1&pagination[pageSize]=24`  | Paginação                             |
-| `?filters[genres][slug][$eq]=<genre-slug>`     | Filtra por gênero                     |
-| `?filters[collections][slug][$eq]=<coll-slug>` | Filtra por coleção                    |
-| `?filters[title][$containsi]=<termo>`          | Busca por título (case-insensitive)   |
+| Param                                          | Efeito                                                                 |
+| ---------------------------------------------- | ---------------------------------------------------------------------- |
+| `?fields=title,slug,publishing_year`           | Enxuga os campos escalares retornados (`id` e `documentId` vêm sempre) |
+| `?populate[cover][fields][0]=url`              | Inclui a URL da capa                                                   |
+| `?sort=publishing_year:desc`                   | Ordena (ex.: mais recentes primeiro)                                   |
+| `?pagination[page]=1&pagination[pageSize]=24`  | Paginação                                                              |
+| `?filters[genres][slug][$eq]=<genre-slug>`     | Filtra por gênero                                                      |
+| `?filters[collections][slug][$eq]=<coll-slug>` | Filtra por coleção                                                     |
+| `?filters[title][$containsi]=<termo>`          | Busca por título (case-insensitive)                                    |
 
 ```bash
 curl "http://localhost:1337/api/books?fields=title,slug,publishing_year&populate[cover][fields][0]=url&sort=publishing_year:desc&pagination[pageSize]=24" \
@@ -249,6 +261,10 @@ curl "http://localhost:1337/api/books?fields=title,slug,publishing_year&populate
 
 Retorna somente obras **publicadas**, e o objeto `meta.pagination` com o total de
 páginas.
+
+`fields` e `populate[…][fields]` restringem só os campos de conteúdo: cada
+entidade — inclusive a mídia populada — continua vindo com `id` e `documentId`.
+No exemplo acima, `cover` sai como `{ id, documentId, url }`.
 
 ## `GET /api/collections`
 
@@ -302,13 +318,21 @@ curl "http://localhost:1337/api/footer?populate=address" \
 ```json
 {
   "data": {
+    "id": 2,
+    "documentId": "ckad59crsjtw2f02lk65m5hq",
     "phone": "(11) 0000-0000",
     "email": "contato@comarte.eca.usp.br",
     "organization": "Com Arte",
     "copyright": "© Com Arte",
+    "createdAt": "2026-07-19T20:29:56.153Z",
+    "updatedAt": "2026-07-19T20:29:56.153Z",
+    "publishedAt": "2026-07-19T20:29:56.165Z",
     "address": {
-      "street": "Av. Prof. Lúcio Martins Rodrigues",
-      "district": "Butantã",
+      "id": 2,
+      "street": "Av. Prof. Lúcio Martins Rodrigues, 443",
+      "complement1": "Prédio 2",
+      "complement2": "Sala 10",
+      "district": "Cidade Universitária",
       "cep": "05508-020",
       "city": "São Paulo",
       "state": "SP",
@@ -317,6 +341,10 @@ curl "http://localhost:1337/api/footer?populate=address" \
   }
 }
 ```
+
+Por ser rota core, o payload vem cru: além dos campos editáveis vêm `id`,
+`documentId` e os timestamps (`createdAt`, `updatedAt`, `publishedAt`), mais um
+`meta: {}` ao lado de `data`. Use `?fields=` para enxugar.
 
 ## `GET /api/about-us`
 
