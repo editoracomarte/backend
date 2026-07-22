@@ -20,14 +20,14 @@
       "targetField": "name",
       "required": true
     },
-    "description": {
-      "type": "richtext"
-    },
     "books": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::book.book",
       "mappedBy": "collections"
+    },
+    "description": {
+      "type": "blocks"
     }
   }
 }

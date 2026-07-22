@@ -28,14 +28,14 @@
       "type": "string",
       "regex": "^https?://orcid\\.org/\\d{4}-\\d{4}-\\d{4}-\\d{3}[\\dX]$"
     },
-    "description": {
-      "type": "richtext"
-    },
     "books": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::book.book",
       "inversedBy": "authors"
+    },
+    "description": {
+      "type": "blocks"
     }
   }
 }
