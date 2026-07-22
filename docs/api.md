@@ -46,6 +46,23 @@ curl http://localhost:1337/api/books/featured \
   -H "Authorization: Bearer <api-token>"
 ```
 
+**Resposta** (12 itens; um só mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 235,
+      "documentId": "kssqw8yqweiwxcdddxh6mbyt",
+      "title": "Rastros",
+      "slug": "rastros",
+      "publishing_year": 2019,
+      "cover": { "url": "/uploads/Rastros_b3e834505b.webp" }
+    }
+  ]
+}
+```
+
 ---
 
 ## `GET /api/books/:slug/related`
@@ -89,12 +106,12 @@ incluídas), que entram com `score: 0`. A rota devolve sempre a quantidade pedid
 {
   "data": [
     {
-      "id": 29,
-      "documentId": "uv3d1i9gne4004hcfs7kwve4",
-      "title": "Assalto ao Céu",
-      "slug": "assalto-ao-ceu",
+      "id": 95,
+      "documentId": "etg9plblr9ro0bhsdgq3h5v8",
+      "title": "Desavessos",
+      "slug": "desavessos",
       "publishing_year": 2014,
-      "cover": { "url": "/uploads/assalto_ao_ceu.jpg" }
+      "cover": { "url": "/uploads/Desavessos_9061f4c3e6.webp" }
     }
   ]
 }
@@ -120,9 +137,58 @@ Detalhes de uma obra publicada a partir da sua `slug`.
   `slug`), `cover` e `sample` (cada um com `url`).
 
 ```bash
-curl http://localhost:1337/api/book/assalto-ao-ceu \
+curl http://localhost:1337/api/book/rastros \
   -H "Authorization: Bearer <api-token>"
 ```
+
+**Resposta:**
+
+```json
+{
+  "data": {
+    "id": 235,
+    "documentId": "kssqw8yqweiwxcdddxh6mbyt",
+    "title": "Rastros",
+    "slug": "rastros",
+    "description": [{ "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }],
+    "isbn": "978-85-7166-184-4",
+    "issn": null,
+    "format": "21 X 19 cm",
+    "page_num": 136,
+    "publishing_year": 2019,
+    "store_url": null,
+    "authors": [
+      {
+        "id": 35,
+        "documentId": "t0gz3obnu5vhnbklg13ltapz",
+        "name": "Atílio Avancini",
+        "slug": "atilio-avancini"
+      }
+    ],
+    "collections": [],
+    "genres": [
+      {
+        "id": 13,
+        "documentId": "iodnv5evtg4wgnlg3fn3asxp",
+        "name": "Poesia",
+        "slug": "poesia"
+      }
+    ],
+    "cover": {
+      "id": 164,
+      "documentId": "d8ekcqm57pvzk0ij17mqsar3",
+      "url": "/uploads/Rastros_b3e834505b.webp"
+    },
+    "sample": {
+      "id": 165,
+      "documentId": "wavtlkcitabqogbv77wvwhtr",
+      "url": "/uploads/978_85_7166_184_4_Rastros_9782df84e4.pdf"
+    }
+  }
+}
+```
+
+Relações vazias vêm como `[]` e mídia ausente como `null`.
 
 ---
 
@@ -185,8 +251,29 @@ Detalhes de uma coleção publicada a partir da sua `slug`.
 - `books` populado com `title` e `slug`.
 
 ```bash
-curl http://localhost:1337/api/collection/classicos \
+curl http://localhost:1337/api/collection/primeira-impressao \
   -H "Authorization: Bearer <api-token>"
+```
+
+**Resposta:**
+
+```json
+{
+  "data": {
+    "id": 13,
+    "documentId": "lyzotp1rkcwv0h66xf6fso8s",
+    "name": "Primeira Impressão",
+    "description": [{ "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }],
+    "books": [
+      {
+        "id": 60,
+        "documentId": "aoxmg6wafcl7osc2dnstkm5g",
+        "title": "Av. Marginal",
+        "slug": "av-marginal"
+      }
+    ]
+  }
+}
 ```
 
 ---
@@ -266,6 +353,30 @@ páginas.
 entidade — inclusive a mídia populada — continua vindo com `id` e `documentId`.
 No exemplo acima, `cover` sai como `{ id, documentId, url }`.
 
+**Resposta** (um item da página mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 58,
+      "documentId": "e5c6gxsm8l4m9srcaqqg2led",
+      "title": "Audiolivros e Edição",
+      "slug": "audiolivros-e-edicao",
+      "publishing_year": null,
+      "cover": {
+        "id": 44,
+        "documentId": "sjgk29rj937ea855v5by0msm",
+        "url": "/uploads/00_Imagem_nao_disponivel_e989d2b8e4.webp"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 24, "pageCount": 6, "total": 137 }
+  }
+}
+```
+
 ## `GET /api/collections`
 
 Índice de coleções.
@@ -273,6 +384,24 @@ No exemplo acima, `cover` sai como `{ id, documentId, url }`.
 ```bash
 curl "http://localhost:1337/api/collections?fields=name,slug" \
   -H "Authorization: Bearer <api-token>"
+```
+
+**Resposta** (um item mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 13,
+      "documentId": "lyzotp1rkcwv0h66xf6fso8s",
+      "name": "Primeira Impressão",
+      "slug": "primeira-impressao"
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 25, "pageCount": 1, "total": 10 }
+  }
+}
 ```
 
 Para trazer as obras de cada coleção: `?populate[books][fields][0]=title&populate[books][fields][1]=slug`.
@@ -287,6 +416,24 @@ curl "http://localhost:1337/api/genres?fields=name,slug" \
   -H "Authorization: Bearer <api-token>"
 ```
 
+**Resposta** (um item mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 13,
+      "documentId": "iodnv5evtg4wgnlg3fn3asxp",
+      "name": "Poesia",
+      "slug": "poesia"
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 25, "pageCount": 1, "total": 18 }
+  }
+}
+```
+
 ## `GET /api/authors`
 
 Lista de autores.
@@ -294,6 +441,24 @@ Lista de autores.
 ```bash
 curl "http://localhost:1337/api/authors?fields=name,slug" \
   -H "Authorization: Bearer <api-token>"
+```
+
+**Resposta** (um item da página mostrado):
+
+```json
+{
+  "data": [
+    {
+      "id": 35,
+      "documentId": "t0gz3obnu5vhnbklg13ltapz",
+      "name": "Atílio Avancini",
+      "slug": "atilio-avancini"
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 25, "pageCount": 6, "total": 136 }
+  }
+}
 ```
 
 ---
@@ -355,6 +520,29 @@ curl http://localhost:1337/api/about-us \
   -H "Authorization: Bearer <api-token>"
 ```
 
+**Resposta:**
+
+```json
+{
+  "data": {
+    "id": 2,
+    "documentId": "cs949gxdx7adsewgqnoqi0cn",
+    "content": [
+      {
+        "type": "heading",
+        "level": 1,
+        "children": [{ "type": "text", "text": "Quem somos" }]
+      },
+      { "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }
+    ],
+    "createdAt": "2026-07-19T20:29:56.153Z",
+    "updatedAt": "2026-07-19T20:29:56.153Z",
+    "publishedAt": "2026-07-19T20:29:56.165Z"
+  },
+  "meta": {}
+}
+```
+
 ## `GET /api/book-submission`
 
 Conteúdo da página **Publique** (seleção de originais): um campo `content` em
@@ -363,4 +551,27 @@ blocks.
 ```bash
 curl http://localhost:1337/api/book-submission \
   -H "Authorization: Bearer <api-token>"
+```
+
+**Resposta:**
+
+```json
+{
+  "data": {
+    "id": 2,
+    "documentId": "yfashi7zn17alw9jay8ptj1n",
+    "content": [
+      {
+        "type": "heading",
+        "level": 1,
+        "children": [{ "type": "text", "text": "Seleção de Originais" }]
+      },
+      { "type": "paragraph", "children": [{ "type": "text", "text": "..." }] }
+    ],
+    "createdAt": "2026-07-19T20:29:56.153Z",
+    "updatedAt": "2026-07-19T20:29:56.153Z",
+    "publishedAt": "2026-07-19T20:29:56.165Z"
+  },
+  "meta": {}
+}
 ```
