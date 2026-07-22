@@ -19,6 +19,7 @@ export default tseslint.config(
       'types/generated/**',
       '**/*.test.*',
       '**/*.spec.*',
+      '.maysa/**',
     ],
   },
 
