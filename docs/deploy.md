@@ -254,13 +254,17 @@ do [docker/nginx.conf](../docker/nginx.conf).
 > container `proxy`, o Strapi é acessado direto na 1337, e as rotas de raiz
 > funcionam naturalmente. A falha só aparece em produção.
 
-### ⚠️ Este projeto ainda não tem backup
+### Backup
 
 O seed **não é backup** — é uma fixture congelada no git, sem os `admin_users`, e
-que envelhece no instante em que alguém edita conteúdo em produção. Depois deste
-deploy, se a VM morrer ou alguém apagar obras pelo painel, **não há de onde
-restaurar**.
+que envelhece no instante em que alguém edita conteúdo em produção. Se a VM morrer
+ou alguém apagar obras pelo painel, o seed não restaura o estado real.
 
-A estratégia de backup (ferramenta, destino off-site, retenção) é um plano à
-parte, em discussão com o time. Até ela existir, a exposição é real e cresce a
-cada obra cadastrada.
+A estratégia de backup vive em [scripts/backup/README.md](../scripts/backup/README.md):
+`pg_dump` + tar dos uploads, comprimidos e enviados criptografados para o Google
+Drive via rclone, rodando mensalmente pelo cron da VM. Setup, agendamento e restore
+estão nesse README.
+
+> **⚠️ Só protege depois de agendado na VM.** O script está no repo, mas não faz
+> nada sozinho — enquanto o cron do root não estiver configurado (ver README),
+> **não há de onde restaurar** e a exposição cresce a cada obra cadastrada.
