@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Backup do Com-Arte: dump do Postgres + tar dos uploads -> Google Drive (rclone).
-# Feito para rodar via cron. Ver scripts/README-backup.md.
+# Feito para rodar via cron. Ver scripts/backup/README.md.
 #
 set -Eeuo pipefail
 

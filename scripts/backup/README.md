@@ -1,4 +1,4 @@
-# Backup — `scripts/backup.sh`
+# Backup — `scripts/backup/backup.sh`
 
 Backup mensal do Com-Arte: banco Postgres + uploads do Strapi, enviados
 criptografados para o Google Drive. Feito para rodar via cron.
@@ -60,10 +60,10 @@ No topo de `backup.sh`, no bloco `CONFIGURACAO`. **Os defaults já são os da VM
 produção** — na VM não precisa mexer. Para rodar em dev, troque as três variáveis abaixo
 (marcadas com `DEV:` no próprio script):
 
-| Variável | O que é | Default (prod) | Em dev, troque para |
-|---|---|---|---|
-| `PROJECT_DIR` | raiz do repositório backend | `/mnt/data/comarte/backend` | onde você clonou |
-| `COMPOSE_FILE` | arquivo compose a usar | `docker-compose.prod.yml` | `docker-compose.yml` |
+| Variável        | O que é                                  | Default (prod)                     | Em dev, troque para                         |
+| --------------- | ---------------------------------------- | ---------------------------------- | ------------------------------------------- |
+| `PROJECT_DIR`   | raiz do repositório backend              | `/mnt/data/comarte/backend`        | onde você clonou                            |
+| `COMPOSE_FILE`  | arquivo compose a usar                   | `docker-compose.prod.yml`          | `docker-compose.yml`                        |
 | `RCLONE_CONFIG` | `rclone.conf` do usuário que roda o cron | `/root/.config/rclone/rclone.conf` | `.config/rclone/rclone.conf` do seu usuário |
 
 > `RCLONE_CONFIG` precisa ser absoluto, não `~/...`: o cron roda sem `HOME` e não expande
@@ -77,7 +77,7 @@ testar como usuário comum, aponte os três para dentro de `$HOME`.
 ## Rodar manualmente
 
 ```bash
-sudo /caminho/absoluto/para/scripts/backup.sh; echo "exit: $?"
+sudo /caminho/absoluto/para/scripts/backup/backup.sh; echo "exit: $?"
 ```
 
 Sempre caminho absoluto. **O script não imprime nada no terminal** — toda a saída vai para
@@ -89,7 +89,7 @@ sudo tail -f  /var/log/comarte-backup.log     # ao vivo, em outro terminal
 grep duracao  /var/log/comarte-backup.log     # tempo por etapa, histórico
 ```
 
-Cada etapa loga `duracao=Ns` e a última linha traz o total, para ver *qual* etapa ficou
+Cada etapa loga `duracao=Ns` e a última linha traz o total, para ver _qual_ etapa ficou
 lenta. Em caso de falha, a linha de erro diz a etapa e quanto tempo passou até ali.
 
 Rodar manual com o cron agendado é seguro: o `flock` faz a segunda execução sair na hora,
@@ -99,7 +99,7 @@ sem as duas se atropelarem.
 indefinido):
 
 ```bash
-env -i bash /caminho/absoluto/para/scripts/backup.sh; echo "exit: $?"
+env -i bash /caminho/absoluto/para/scripts/backup/backup.sh; echo "exit: $?"
 ```
 
 Se passar aí, passa no cron.
@@ -111,17 +111,17 @@ Se passar aí, passa no cron.
 O script precisa de root (por causa dos caminhos `/var/...`), então use o crontab do root:
 
 ```bash
-chmod +x /caminho/absoluto/para/scripts/backup.sh
+chmod +x /caminho/absoluto/para/scripts/backup/backup.sh
 sudo crontab -e
 ```
 
 Dia 1 de cada mês, 03:00:
 
 ```cron
-0 3 1 * * /caminho/absoluto/para/scripts/backup.sh >> /var/log/comarte-backup-cron.log 2>&1
+0 3 1 * * /caminho/absoluto/para/scripts/backup/backup.sh >> /var/log/comarte-backup-cron.log 2>&1
 ```
 
-O redirecionamento acima só pega falhas *antes* do script assumir o log (script não
+O redirecionamento acima só pega falhas _antes_ do script assumir o log (script não
 encontrado, sem permissão). Se esse arquivo estiver vazio mas algo falhou, o erro está no
 `LOG_FILE`.
 
