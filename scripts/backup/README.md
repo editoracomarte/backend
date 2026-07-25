@@ -63,7 +63,7 @@ produção** — na VM não precisa mexer. Para rodar em dev, troque as três va
 | Variável        | O que é                                  | Default (prod)                     | Em dev, troque para                         |
 | --------------- | ---------------------------------------- | ---------------------------------- | ------------------------------------------- |
 | `PROJECT_DIR`   | raiz do repositório backend              | `/mnt/data/comarte/backend`        | onde você clonou                            |
-| `COMPOSE_FILE`  | arquivo compose a usar                   | `docker-compose.prod.yml`          | `docker-compose.yml`                        |
+| `BACKUP_COMPOSE_FILE` | arquivo compose a usar             | `docker-compose.prod.yml`          | `docker-compose.yml`                        |
 | `RCLONE_CONFIG` | `rclone.conf` do usuário que roda o cron | `/root/.config/rclone/rclone.conf` | `.config/rclone/rclone.conf` do seu usuário |
 
 > `RCLONE_CONFIG` precisa ser absoluto, não `~/...`: o cron roda sem `HOME` e não expande

@@ -16,7 +16,7 @@ set -Eeuo pipefail
 PROJECT_DIR="/mnt/data/comarte/backend"
 
 # Arquivo compose. DEV: docker-compose.yml
-COMPOSE_FILE="${PROJECT_DIR}/docker-compose.prod.yml"
+BACKUP_COMPOSE_FILE="${PROJECT_DIR}/docker-compose.prod.yml"
 
 # Onde os backups ficam no disco local/VM antes (e depois) do upload.
 BACKUP_DIR="/var/backups/comarte"
@@ -112,7 +112,7 @@ trap cleanup_partials EXIT
 
 log "===== inicio do backup (${DATE}) ====="
 
-[ -f "${COMPOSE_FILE}" ] || die "compose nao encontrado: ${COMPOSE_FILE}"
+[ -f "${BACKUP_COMPOSE_FILE}" ] || die "compose nao encontrado: ${BACKUP_COMPOSE_FILE}"
 [ -f "${ENV_FILE}" ] || die ".env nao encontrado: ${ENV_FILE}"
 [ -f "${RCLONE_CONFIG}" ] || die "config do rclone nao encontrado: ${RCLONE_CONFIG}"
 
@@ -124,7 +124,7 @@ source "${ENV_FILE}"
 : "${DATABASE_PASSWORD:?ausente no .env}"
 
 compose() {
-  docker compose -f "${COMPOSE_FILE}" --project-directory "${PROJECT_DIR}" "$@"
+  docker compose -f "${BACKUP_COMPOSE_FILE}" --project-directory "${PROJECT_DIR}" "$@"
 }
 
 # SECONDS e' zerado no inicio do script pelo bash; cada etapa guarda o valor de
