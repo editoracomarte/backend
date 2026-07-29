@@ -1,10 +1,10 @@
 {
   "kind": "singleType",
-  "collectionName": "footers",
+  "collectionName": "contacts",
   "info": {
-    "singularName": "footer",
-    "pluralName": "footers",
-    "displayName": "Rodapé"
+    "singularName": "contact",
+    "pluralName": "contacts",
+    "displayName": "Contato"
   },
   "options": {
     "draftAndPublish": true
@@ -23,10 +23,15 @@
     "copyright": {
       "type": "string"
     },
+    "content": {
+      "type": "blocks"
+    },
     "address": {
       "type": "component",
       "component": "address.address",
-      "repeatable": false
+      "repeatable": true,
+      "min": 1,
+      "max": 1
     }
   }
 }

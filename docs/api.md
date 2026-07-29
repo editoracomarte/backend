@@ -477,13 +477,14 @@ curl "http://localhost:1337/api/authors?fields=name,slug" \
 Páginas cujo conteúdo é editável no admin. Cada uma é um single type, servido pela
 rota `find` core (a mesma família das listas: token read-only, aceita `populate`).
 
-## `GET /api/footer`
+## `GET /api/contact`
 
-Dados do rodapé: `phone`, `email`, `organization`, `copyright` e o componente
-`address`. O componente `address` não vem por padrão — popule-o:
+Dados da página **Contato** (rodapé e afins): `phone`, `email`, `organization`,
+`copyright`, um campo `content` em blocks e o componente `address`. O
+componente `address` não vem por padrão — popule-o:
 
 ```bash
-curl "http://localhost:1337/api/footer?populate=address" \
+curl "http://localhost:1337/api/contact?populate=address" \
   -H "Authorization: Bearer <api-token>"
 ```
 
@@ -493,28 +494,50 @@ curl "http://localhost:1337/api/footer?populate=address" \
 {
   "data": {
     "id": 2,
-    "documentId": "ckad59crsjtw2f02lk65m5hq",
+    "documentId": "pdqd2soq0b9utiifefteqyer",
     "phone": "(11) 0000-0000",
     "email": "contato@comarte.eca.usp.br",
-    "organization": "Com Arte",
-    "copyright": "© Com Arte",
-    "createdAt": "2026-07-19T20:29:56.153Z",
-    "updatedAt": "2026-07-19T20:29:56.153Z",
-    "publishedAt": "2026-07-19T20:29:56.165Z",
-    "address": {
-      "id": 2,
-      "street": "Av. Prof. Lúcio Martins Rodrigues, 443",
-      "complement1": "Prédio 2",
-      "complement2": "Sala 10",
-      "district": "Cidade Universitária",
-      "cep": "05508-020",
-      "city": "São Paulo",
-      "state": "SP",
-      "country": "Brasil"
-    }
+    "organization": "Departamento de Jornalismo e Editoração (CJE)",
+    "copyright": "© 2026 Com-Arte Editora Laboratório. Todos os direitos reservados.",
+    "content": [
+      {
+        "type": "paragraph",
+        "children": [
+          { "type": "text", "text": "COM ARTE — EDITORA-LABORATÓRIO DO CURSO DE EDITORAÇÃO" }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "children": [{ "type": "text", "text": "Escola de Comunicação e Artes" }]
+      },
+      {
+        "type": "paragraph",
+        "children": [{ "type": "text", "text": "Universidade de São Paulo" }]
+      }
+    ],
+    "createdAt": "2026-07-29T03:03:39.241Z",
+    "updatedAt": "2026-07-29T03:03:39.241Z",
+    "publishedAt": "2026-07-29T03:03:39.263Z",
+    "address": [
+      {
+        "id": 2,
+        "street": "Rua Exemplo, 123",
+        "complement1": "Bloco 1",
+        "complement2": "Sala 10",
+        "district": "Bairro Exemplo",
+        "cep": "00000-000",
+        "city": "São Paulo",
+        "state": "SP",
+        "country": "Brasil"
+      }
+    ]
   }
 }
 ```
+
+> `address` é `repeatable` (`min: 1, max: 1`) — por isso vem como **array**
+> mesmo tendo sempre um único item, diferente de componentes não-repetíveis
+> (que vêm como objeto).
 
 Por ser rota core, o payload vem cru: além dos campos editáveis vêm `id`,
 `documentId` e os timestamps (`createdAt`, `updatedAt`, `publishedAt`), mais um
