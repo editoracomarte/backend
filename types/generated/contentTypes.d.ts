@@ -558,33 +558,6 @@ export interface ApiContactContact extends Struct.SingleTypeSchema {
   };
 }
 
-export interface ApiFooterFooter extends Struct.SingleTypeSchema {
-  collectionName: 'footers';
-  info: {
-    displayName: 'Rodap\u00E9';
-    pluralName: 'footers';
-    singularName: 'footer';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    address: Schema.Attribute.Component<'address.address', false>;
-    copyright: Schema.Attribute.String;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    email: Schema.Attribute.Email;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::footer.footer'> &
-      Schema.Attribute.Private;
-    organization: Schema.Attribute.String;
-    phone: Schema.Attribute.String;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-  };
-}
-
 export interface ApiGenreGenre extends Struct.CollectionTypeSchema {
   collectionName: 'genres';
   info: {
@@ -1076,7 +1049,6 @@ declare module '@strapi/strapi' {
       'api::book.book': ApiBookBook;
       'api::collection.collection': ApiCollectionCollection;
       'api::contact.contact': ApiContactContact;
-      'api::footer.footer': ApiFooterFooter;
       'api::genre.genre': ApiGenreGenre;
       'api::instagram.instagram': ApiInstagramInstagram;
       'plugin::content-releases.release': PluginContentReleasesRelease;
