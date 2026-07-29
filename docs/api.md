@@ -502,7 +502,9 @@ curl "http://localhost:1337/api/contact?populate=address" \
     "content": [
       {
         "type": "paragraph",
-        "children": [{ "type": "text", "text": "COM ARTE — EDITORA-LABORATÓRIO DO CURSO DE EDITORAÇÃO" }]
+        "children": [
+          { "type": "text", "text": "COM ARTE — EDITORA-LABORATÓRIO DO CURSO DE EDITORAÇÃO" }
+        ]
       },
       {
         "type": "paragraph",
