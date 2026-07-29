@@ -1,0 +1,37 @@
+{
+  "kind": "singleType",
+  "collectionName": "contacts",
+  "info": {
+    "singularName": "contact",
+    "pluralName": "contacts",
+    "displayName": "Contato"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email"
+    },
+    "organization": {
+      "type": "string"
+    },
+    "copyright": {
+      "type": "string"
+    },
+    "content": {
+      "type": "blocks"
+    },
+    "address": {
+      "type": "component",
+      "component": "address.address",
+      "repeatable": true,
+      "min": 1,
+      "max": 1
+    }
+  }
+}
