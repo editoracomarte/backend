@@ -36,6 +36,8 @@ async function createAndPublishBook(title: string, publishing_year: number) {
   return doc;
 }
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 describe('GET /api/books/featured', () => {
   it('returns up to 12 books', async () => {
     for (let i = 0; i < 15; i++) {
@@ -50,9 +52,11 @@ describe('GET /api/books/featured', () => {
     expect(res.body.data).toHaveLength(12);
   });
 
-  it('always includes the 6 most recent books', async () => {
-    for (let i = 0; i < 15; i++) {
-      await createAndPublishBook(`Obra ${i}`, 2000 + i);
+  it('always includes every book from the current and previous year', async () => {
+    await createAndPublishBook('Deste ano', CURRENT_YEAR);
+    await createAndPublishBook('Do ano passado', CURRENT_YEAR - 1);
+    for (let i = 0; i < 10; i++) {
+      await createAndPublishBook(`Antiga ${i}`, 2000 + i);
     }
 
     const res = await request(strapi.server.httpServer)
@@ -64,9 +68,26 @@ describe('GET /api/books/featured', () => {
       (o: { publishing_year: number }) => o.publishing_year
     );
 
-    for (const year of [2009, 2010, 2011, 2012, 2013, 2014]) {
-      expect(years).toContain(year);
+    expect(years).toContain(CURRENT_YEAR);
+    expect(years).toContain(CURRENT_YEAR - 1);
+  });
+
+  it('puts books from the last 2 years ahead of older ones', async () => {
+    await createAndPublishBook('Deste ano', CURRENT_YEAR);
+    for (let i = 0; i < 10; i++) {
+      await createAndPublishBook(`Antiga ${i}`, 2000 + i);
     }
+
+    const res = await request(strapi.server.httpServer)
+      .get('/api/books/featured')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    const years: number[] = res.body.data.map(
+      (o: { publishing_year: number }) => o.publishing_year
+    );
+
+    expect(years[0]).toBe(CURRENT_YEAR);
   });
 
   it('returns all books when total is less than 12', async () => {
