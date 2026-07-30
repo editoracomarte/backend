@@ -28,15 +28,23 @@ concedido ao token read-only — então **o mesmo token vale para tudo abaixo**.
 
 ## `GET /api/books/featured`
 
-Seleção curada de até 12 obras publicadas para o destaque da home, combinando as
-mais recentes com uma parcela aleatória, embaralhadas antes de retornar.
+Seleção curada de até 12 obras publicadas para o destaque da home, em três
+camadas: obras recentes fixas no topo, seguidas de uma parcela aleatória.
 
 **Seleção:**
 
-- até 6 obras mais recentes (por `publishing_year` decrescente);
-- até 6 obras aleatórias entre as restantes;
-- resultado final embaralhado (Fisher-Yates), para a mesma obra não ficar sempre
-  no topo.
+1. todas as obras com `publishing_year` igual ao ano atual ou ao anterior
+   (ordem fixa, da mais recente para a mais antiga) — havendo mais de 12, as
+   mais antigas dentre elas ficam de fora;
+2. se isso não completar 8 obras, as próximas mais recentes entram para
+   fechar 8 — quais obras entram é determinístico (sempre as mais recentes
+   disponíveis), mas a ordem entre elas é embaralhada;
+3. os espaços restantes até completar 12 são preenchidos com obras aleatórias
+   (Fisher-Yates) entre as que sobraram.
+
+Ou seja: só as obras dos últimos 2 anos têm posição fixa (mais recente
+primeiro); o restante do top 8 e o preenchimento final (posições 9 a 12,
+quando houver) são embaralhados.
 
 **Payload por obra:** `{ id, documentId, title, slug, publishing_year, cover }`,
 onde `cover` é `{ url }` ou `null`.
