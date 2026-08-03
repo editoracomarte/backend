@@ -1,18 +1,24 @@
 # Backup — `scripts/backup/backup.sh`
 
-Backup mensal do Com-Arte: banco Postgres + uploads do Strapi, enviados
-criptografados para o Google Drive. Feito para rodar via cron.
+Backup mensal do Com-Arte: banco Postgres + uploads do Strapi + export de configuração
+do Strapi, enviados criptografados para o Google Drive. Feito para rodar via cron.
 
 ```
-pg_dump  ─┐
-          ├─► gzip/tar em BACKUP_DIR ─► rclone ─► Google Drive (crypt)
-tar uploads ┘        (cópia local, 90 dias)      (cópia offsite, retenção manual)
+pg_dump      ─┐
+tar uploads   ─┤─► gzip/tar em BACKUP_DIR ─► rclone ─► Google Drive (crypt)
+strapi export ┘        (cópia local, 90 dias)      (cópia offsite, retenção manual)
 ```
 
 - **`pg_dump`**: ferramenta do Postgres que exporta o banco inteiro (schema + dados) num
   arquivo `.sql` que reconstrói tudo no restore.
 - **`tar` dos uploads**: empacota a pasta `public/uploads` do Strapi (imagens de capa
   etc., que ficam em arquivo no disco, não no banco) num único `.tar`.
+- **`strapi export --only config`**: pega o que não está nem no dump nem nos uploads —
+  configuração do admin, como a view configurada dos collection types no
+  content-manager (layouts de list/edit view). Roda com `--only config` para ficar
+  enxuto (não duplica conteúdo nem mídia, já cobertos pelos dois passos acima). Não
+  inclui `admin_users` nem tokens de API — por isso pode reaproveitar a
+  `STRAPI_IMPORT_ENCRYPTION_KEY` do seed sem expor nada de novo.
 
 - **Cópia local** (`/var/backups/comarte/`): descartável, some se a máquina morrer. O
   script apaga sozinho o que passa de 90 dias.
@@ -21,9 +27,13 @@ tar uploads ┘        (cópia local, 90 dias)      (cópia offsite, retenção 
 > **Por que criptografado:** o dump inclui o `admin_users` (hashes bcrypt das senhas) e os
 > tokens de API do Strapi. Como o backup fica num Drive de terceiros, o rclone cifra antes
 > de enviar — o Google só vê blocos cifrados. A senha do crypt não fica nesta máquina: para
-> configurar ou restaurar, **peça a senha ao time** (ela não está no repositório).
+> configurar ou restaurar, **peça a senha ao time** (ela não está no repositório). O export
+> de config já sai cifrado pelo próprio `strapi export` (com a `STRAPI_IMPORT_ENCRYPTION_KEY`
+> do `.env`), então ele carrega duas camadas de cifra — uma a mais que os outros dois
+> arquivos, sem problema.
 
-Nomes gerados: `comarte-db-AAAA-MM-DD.sql.gz` e `comarte-uploads-AAAA-MM-DD.tar.gz`.
+Nomes gerados: `comarte-db-AAAA-MM-DD.sql.gz`, `comarte-uploads-AAAA-MM-DD.tar.gz` e
+`comarte-config-AAAA-MM-DD.tar.gz.enc`.
 
 ---
 
@@ -147,6 +157,8 @@ rclone --config ~/.config/rclone/rclone.conf copy \
   gdrive-crypt:comarte/backups/comarte-db-AAAA-MM-DD.sql.gz /var/backups/comarte/
 rclone --config ~/.config/rclone/rclone.conf copy \
   gdrive-crypt:comarte/backups/comarte-uploads-AAAA-MM-DD.tar.gz /var/backups/comarte/
+rclone --config ~/.config/rclone/rclone.conf copy \
+  gdrive-crypt:comarte/backups/comarte-config-AAAA-MM-DD.tar.gz.enc /var/backups/comarte/
 ```
 
 Se o `lsl` lista os nomes mas o download vem corrompido, a senha do crypt está errada —
@@ -172,6 +184,26 @@ dentro do container:
 gunzip -c /var/backups/comarte/comarte-uploads-AAAA-MM-DD.tar.gz \
   | docker compose exec -T strapi tar -xf - -C /app/public
 ```
+
+### Configuração (view dos collection types etc.)
+
+Restaura só `config` — não toca em conteúdo nem mídia, então é seguro rodar mesmo
+sem `--force` mexer no resto:
+
+```bash
+cd /caminho/para/backend
+source .env   # STRAPI_IMPORT_ENCRYPTION_KEY
+
+docker compose cp /var/backups/comarte/comarte-config-AAAA-MM-DD.tar.gz.enc \
+  strapi:/tmp/comarte-config-restore.tar.gz.enc
+docker compose exec -T -e STRAPI_IMPORT_ENCRYPTION_KEY strapi \
+  sh -c 'npm run strapi import -- -f /tmp/comarte-config-restore.tar.gz.enc --force --only config -k "$STRAPI_IMPORT_ENCRYPTION_KEY"'
+docker compose exec -T strapi rm -f /tmp/comarte-config-restore.tar.gz.enc
+```
+
+> Mesmo com `--only config`, o `import` ainda pede `--force` pra rodar sem prompt
+> interativo (é assim que o `strapi import` funciona) — mas ele só sobrescreve
+> configuração, não apaga conteúdo.
 
 ### Conferir
 

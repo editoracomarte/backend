@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Backup do Com-Arte: dump do Postgres + tar dos uploads -> Google Drive (rclone).
+# Backup do Com-Arte: dump do Postgres + tar dos uploads + export de config do
+# Strapi -> Google Drive (rclone).
 # Feito para rodar via cron. Ver scripts/backup/README.md.
 #
 set -Eeuo pipefail
@@ -75,6 +76,8 @@ RCLONE_OPTS=(
 DATE="$(date +%F)"
 DB_FILE="${BACKUP_DIR}/comarte-db-${DATE}.sql.gz"
 UPLOADS_FILE="${BACKUP_DIR}/comarte-uploads-${DATE}.tar.gz"
+CONFIG_TMP_IN_CONTAINER="/tmp/comarte-config-${DATE}"
+CONFIG_FILE="${BACKUP_DIR}/comarte-config-${DATE}.tar.gz.enc"
 
 mkdir -p "${BACKUP_DIR}" "$(dirname "${LOG_FILE}")" "$(dirname "${LOCK_FILE}")"
 exec >>"${LOG_FILE}" 2>&1
@@ -96,7 +99,7 @@ on_error() {
 trap on_error ERR
 
 cleanup_partials() {
-  rm -f "${DB_FILE}.part" "${UPLOADS_FILE}.part"
+  rm -f "${DB_FILE}.part" "${UPLOADS_FILE}.part" "${CONFIG_FILE}.part"
 }
 
 exec 200>"${LOCK_FILE}"
@@ -122,6 +125,7 @@ source "${ENV_FILE}"
 : "${DATABASE_NAME:?ausente no .env}"
 : "${DATABASE_USERNAME:?ausente no .env}"
 : "${DATABASE_PASSWORD:?ausente no .env}"
+: "${STRAPI_IMPORT_ENCRYPTION_KEY:?ausente no .env}"
 
 compose() {
   docker compose -f "${BACKUP_COMPOSE_FILE}" --project-directory "${PROJECT_DIR}" "$@"
@@ -148,19 +152,41 @@ compose exec -T "${STRAPI_SERVICE}" \
 mv "${UPLOADS_FILE}.part" "${UPLOADS_FILE}"
 log "[tar] ok: ${UPLOADS_FILE} ($(du -h "${UPLOADS_FILE}" | cut -f1)) duracao=$((SECONDS - t_tar))s"
 
-# ---------- 3. upload do banco ----------
+# ---------- 3. export enxuto de configuracao do Strapi ----------
+# So' "config": nao duplica conteudo/midia, ja cobertos pelos passos 1 e 2. Pega o
+# que nao esta nem no banco nem nos uploads, ex.: view configurada dos collection
+# types no admin (layouts do content-manager). Cifrado com a mesma chave do seed
+# (STRAPI_IMPORT_ENCRYPTION_KEY) so' por consistencia com o restante do dump — o
+# export de config nao inclui admin_users nem tokens.
+t_export=${SECONDS}
+log "[export-config] strapi export --only config via servico ${STRAPI_SERVICE}"
+compose exec -T "${STRAPI_SERVICE}" \
+  npm run strapi export -- --file "${CONFIG_TMP_IN_CONTAINER}" --only config \
+    --key "${STRAPI_IMPORT_ENCRYPTION_KEY}"
+compose exec -T "${STRAPI_SERVICE}" cat "${CONFIG_TMP_IN_CONTAINER}.tar.gz.enc" >"${CONFIG_FILE}.part"
+compose exec -T "${STRAPI_SERVICE}" rm -f "${CONFIG_TMP_IN_CONTAINER}.tar.gz.enc"
+mv "${CONFIG_FILE}.part" "${CONFIG_FILE}"
+log "[export-config] ok: ${CONFIG_FILE} ($(du -h "${CONFIG_FILE}" | cut -f1)) duracao=$((SECONDS - t_export))s"
+
+# ---------- 4. upload do banco ----------
 t_up_db=${SECONDS}
 log "[upload-db] enviando $(basename "${DB_FILE}") para ${RCLONE_REMOTE}:${RCLONE_DEST}"
 rclone "${RCLONE_OPTS[@]}" copy "${DB_FILE}" "${RCLONE_REMOTE}:${RCLONE_DEST}"
 log "[upload-db] ok duracao=$((SECONDS - t_up_db))s"
 
-# ---------- 4. upload dos uploads ----------
+# ---------- 5. upload dos uploads ----------
 t_up_uploads=${SECONDS}
 log "[upload-uploads] enviando $(basename "${UPLOADS_FILE}") para ${RCLONE_REMOTE}:${RCLONE_DEST}"
 rclone "${RCLONE_OPTS[@]}" copy "${UPLOADS_FILE}" "${RCLONE_REMOTE}:${RCLONE_DEST}"
 log "[upload-uploads] ok duracao=$((SECONDS - t_up_uploads))s"
 
-# ---------- 5. limpeza local ----------
+# ---------- 6. upload da config ----------
+t_up_config=${SECONDS}
+log "[upload-config] enviando $(basename "${CONFIG_FILE}") para ${RCLONE_REMOTE}:${RCLONE_DEST}"
+rclone "${RCLONE_OPTS[@]}" copy "${CONFIG_FILE}" "${RCLONE_REMOTE}:${RCLONE_DEST}"
+log "[upload-config] ok duracao=$((SECONDS - t_up_config))s"
+
+# ---------- 7. limpeza local ----------
 t_clean=${SECONDS}
 log "[limpeza] removendo backups locais com mais de ${RETENTION_DAYS} dias"
 find "${BACKUP_DIR}" -maxdepth 1 -type f -name 'comarte-*' \
