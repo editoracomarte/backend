@@ -21,11 +21,11 @@ produção, incluindo o proxy que serve o front:
   front para reiniciar — os arquivos novos entram no ar assim que o build
   termina.
 
-| O quê | Onde |
-|-------|------|
-| Repo do back | diretório clonado na VM que tem o `docker-compose.prod.yml` |
-| Repo do front | outro diretório clonado na VM, separado do back |
-| `dist/` servido pelo nginx | valor de `FRONTEND_DIST` no `.env` do back |
+| O quê                      | Onde                                                        |
+| -------------------------- | ----------------------------------------------------------- |
+| Repo do back               | diretório clonado na VM que tem o `docker-compose.prod.yml` |
+| Repo do front              | outro diretório clonado na VM, separado do back             |
+| `dist/` servido pelo nginx | valor de `FRONTEND_DIST` no `.env` do back                  |
 
 ## Acessar a VM
 
