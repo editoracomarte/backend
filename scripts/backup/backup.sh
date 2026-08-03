@@ -38,6 +38,11 @@ UPLOADS_PATH_IN_CONTAINER="/app/public/uploads"
 # Retencao LOCAL em dias. O que ja subiu pro Drive nao e' tocado por isso.
 RETENTION_DAYS=90
 
+# Quantos backups (por data, nao por arquivo) ficam no Drive. Cada execucao apaga
+# os mais antigos que sobrarem. 2 = o de agora + 1 de reserva, caso o mais recente
+# saia corrompido.
+DRIVE_KEEP_BACKUPS=2
+
 # rclone: remote crypt ja configurado por fora + pasta destino dentro dele.
 RCLONE_REMOTE="gdrive-crypt"
 RCLONE_DEST="comarte/backups"
@@ -186,11 +191,40 @@ log "[upload-config] enviando $(basename "${CONFIG_FILE}") para ${RCLONE_REMOTE}
 rclone "${RCLONE_OPTS[@]}" copy "${CONFIG_FILE}" "${RCLONE_REMOTE}:${RCLONE_DEST}"
 log "[upload-config] ok duracao=$((SECONDS - t_up_config))s"
 
-# ---------- 7. limpeza local ----------
+# ---------- 7. limpeza no Drive (mantem so' os ultimos DRIVE_KEEP_BACKUPS) ----------
+# So' roda depois dos 3 uploads terem dado certo acima (set -e): o backup novo ja
+# esta confirmado no Drive antes de qualquer coisa antiga ser apagada.
+#
+# "sort -u | tail -n N" em vez de "sort -ru | head -n N": com pipefail, o head
+# fecha o pipe assim que le' as N linhas que quer, e o sort (que so' escreve depois
+# de ler a entrada inteira) leva SIGPIPE tentando escrever o resto — o pipeline
+# inteiro morre com exit 141 mesmo sem erro nenhum. O tail precisa ler a entrada
+# inteira antes de decidir quais sao as ultimas linhas, entao nunca fecha o pipe
+# cedo e nunca gera SIGPIPE upstream.
+t_clean_drive=${SECONDS}
+log "[limpeza-drive] mantendo os ${DRIVE_KEEP_BACKUPS} backups mais recentes em ${RCLONE_REMOTE}:${RCLONE_DEST}"
+REMOTE_FILES="$(rclone --config "${RCLONE_CONFIG}" lsf "${RCLONE_REMOTE}:${RCLONE_DEST}" --files-only)" \
+  || die "[limpeza-drive] falhou ao listar ${RCLONE_REMOTE}:${RCLONE_DEST}"
+REMOTE_BACKUP_FILES="$(printf '%s\n' "${REMOTE_FILES}" | grep -E '^comarte-(db|uploads|config)-[0-9]{4}-[0-9]{2}-[0-9]{2}\.' || true)"
+if [ -z "${REMOTE_BACKUP_FILES}" ]; then
+  log "[limpeza-drive] nenhum backup encontrado na listagem, nada a limpar"
+else
+  KEEP_DATES="$(printf '%s\n' "${REMOTE_BACKUP_FILES}" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | sort -u | tail -n "${DRIVE_KEEP_BACKUPS}")"
+  OLD_FILES="$(printf '%s\n' "${REMOTE_BACKUP_FILES}" | grep -vFf <(printf '%s\n' "${KEEP_DATES}") || true)"
+  if [ -n "${OLD_FILES}" ]; then
+    while IFS= read -r old_file; do
+      log "[limpeza-drive] removendo ${old_file}"
+      rclone "${RCLONE_OPTS[@]}" deletefile "${RCLONE_REMOTE}:${RCLONE_DEST}/${old_file}"
+    done <<<"${OLD_FILES}"
+  fi
+fi
+log "[limpeza-drive] ok duracao=$((SECONDS - t_clean_drive))s"
+
+# ---------- 8. limpeza local ----------
 t_clean=${SECONDS}
 log "[limpeza] removendo backups locais com mais de ${RETENTION_DAYS} dias"
 find "${BACKUP_DIR}" -maxdepth 1 -type f -name 'comarte-*' \
   -mtime "+${RETENTION_DAYS}" -print -delete
-log "[limpeza] ok (Drive intacto — retencao la e' manual) duracao=$((SECONDS - t_clean))s"
+log "[limpeza] ok duracao=$((SECONDS - t_clean))s"
 
 log "===== backup concluido: duracao total=${SECONDS}s ====="

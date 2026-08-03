@@ -6,7 +6,7 @@ do Strapi, enviados criptografados para o Google Drive. Feito para rodar via cro
 ```
 pg_dump      ─┐
 tar uploads   ─┤─► gzip/tar em BACKUP_DIR ─► rclone ─► Google Drive (crypt)
-strapi export ┘        (cópia local, 90 dias)      (cópia offsite, retenção manual)
+strapi export ┘    (cópia local, 90 dias)   (cópia offsite, últimos DRIVE_KEEP_BACKUPS)
 ```
 
 - **`pg_dump`**: ferramenta do Postgres que exporta o banco inteiro (schema + dados) num
@@ -22,7 +22,10 @@ strapi export ┘        (cópia local, 90 dias)      (cópia offsite, retençã
 
 - **Cópia local** (`/var/backups/comarte/`): descartável, some se a máquina morrer. O
   script apaga sozinho o que passa de 90 dias.
-- **Cópia offsite** (Google Drive): a que importa para desastre. Criptografada.
+- **Cópia offsite** (Google Drive): a que importa para desastre. Criptografada. O script
+  mantém só os `DRIVE_KEEP_BACKUPS` mais recentes (default: **2** — o de agora + 1 de
+  reserva, caso o mais recente saia corrompido) e apaga o resto **depois** que os 3
+  arquivos novos já subiram com sucesso, então nunca fica sem nenhuma cópia no ar.
 
 > **Por que criptografado:** o dump inclui o `admin_users` (hashes bcrypt das senhas) e os
 > tokens de API do Strapi. Como o backup fica num Drive de terceiros, o rclone cifra antes
@@ -78,6 +81,9 @@ produção** — na VM não precisa mexer. Para rodar em dev, troque as três va
 
 > `RCLONE_CONFIG` precisa ser absoluto, não `~/...`: o cron roda sem `HOME` e não expande
 > o `~`. Em prod o cron é do root, daí `/root/...`.
+
+`DRIVE_KEEP_BACKUPS` (default `2`) controla quantos backups (por data, não por arquivo)
+ficam no Drive — ajuste ali mesmo se quiser mais margem de segurança.
 
 `BACKUP_DIR`, `LOG_FILE` e `LOCK_FILE` moram em `/var/...`, o que **exige root**. Para
 testar como usuário comum, aponte os três para dentro de `$HOME`.
@@ -136,8 +142,10 @@ encontrado, sem permissão). Se esse arquivo estiver vazio mas algo falhou, o er
 `LOG_FILE`.
 
 Para validar sem esperar um mês, agende `*/5 * * * *` temporariamente, confirme com
-`grep CRON /var/log/syslog`, e **volte para a agenda mensal** — cada execução sobe arquivo
-para o Drive.
+`grep CRON /var/log/syslog`, e **volte para a agenda mensal** — como o nome do arquivo usa
+a data (`AAAA-MM-DD`), execuções repetidas no mesmo dia sobrescrevem o mesmo backup, então
+não some nada por rodar de teste em teste; só depois de virar o dia é que uma execução nova
+soma como um backup adicional na contagem do `DRIVE_KEEP_BACKUPS`.
 
 ---
 
