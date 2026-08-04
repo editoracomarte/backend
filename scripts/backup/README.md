@@ -85,7 +85,12 @@ agrupa por data, não por arquivo).
 
 ### Passo 0 — baixar do Drive (se o arquivo não estiver em disco)
 
-Peça a senha do remote `gdrive-crypt` ao time:
+Peça a senha do remote `gdrive-crypt` ao time. Liste o que tem no Drive pra saber o nome
+exato (o timestamp completo, `AAAA-MM-DD_HH-MM-SS`, não dá pra adivinhar):
+
+```bash
+sudo rclone lsl gdrive-crypt:
+```
 
 ```bash
 mkdir -p /var/backups/comarte
