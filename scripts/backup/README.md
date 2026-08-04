@@ -68,7 +68,7 @@ Dia 1 de cada mês, 03:00:
 0 3 1 * * /caminho/absoluto/para/scripts/backup/backup.sh >> /var/log/comarte-backup-cron.log 2>&1
 ```
 
-Esse redirecionamento só pega falhas *antes* do script assumir o log; se o arquivo estiver
+Esse redirecionamento só pega falhas _antes_ do script assumir o log; se o arquivo estiver
 vazio mas algo falhou, o erro está no `LOG_FILE`.
 
 Para validar sem esperar um mês, agende `*/5 * * * *` temporariamente e volte para a agenda
