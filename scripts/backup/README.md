@@ -9,9 +9,9 @@ tar uploads   ─┤─► gzip/tar em BACKUP_DIR ─► rclone ─► Google Dr
 strapi export ┘    (cópia local, 90 dias)   (cópia offsite, últimos DRIVE_KEEP_BACKUPS)
 ```
 
-- **`comarte-db-AAAA-MM-DD.sql.gz`** — `pg_dump --clean --if-exists` do banco inteiro.
-- **`comarte-uploads-AAAA-MM-DD.tar.gz`** — `public/uploads` do Strapi (não fica no banco).
-- **`comarte-config-AAAA-MM-DD.tar.gz.enc`** — `strapi export --only config`: o que não
+- **`comarte-db-AAAA-MM-DD_HH-MM-SS.sql.gz`** — `pg_dump --clean --if-exists` do banco inteiro.
+- **`comarte-uploads-AAAA-MM-DD_HH-MM-SS.tar.gz`** — `public/uploads` do Strapi (não fica no banco).
+- **`comarte-config-AAAA-MM-DD_HH-MM-SS.tar.gz.enc`** — `strapi export --only config`: o que não
   está no dump nem nos uploads (ex.: view configurada dos collection types no
   content-manager). Não inclui `admin_users` nem tokens, por isso reaproveita a
   `STRAPI_IMPORT_ENCRYPTION_KEY` do seed sem expor nada de novo.
@@ -72,8 +72,9 @@ Esse redirecionamento só pega falhas *antes* do script assumir o log; se o arqu
 vazio mas algo falhou, o erro está no `LOG_FILE`.
 
 Para validar sem esperar um mês, agende `*/5 * * * *` temporariamente e volte para a agenda
-mensal depois — o nome do arquivo usa a data, então execuções repetidas no mesmo dia
-sobrescrevem o mesmo backup em vez de acumular.
+mensal depois — cada execução de teste vira um arquivo novo (o nome inclui a hora), mas
+todas as do mesmo dia contam como 1 backup só para a retenção do Drive (`DRIVE_KEEP_BACKUPS`
+agrupa por data, não por arquivo).
 
 ---
 
@@ -89,11 +90,11 @@ Peça a senha do remote `gdrive-crypt` ao time:
 ```bash
 mkdir -p /var/backups/comarte
 rclone --config ~/.config/rclone/rclone.conf copy \
-  gdrive-crypt:comarte/backups/comarte-db-AAAA-MM-DD.sql.gz /var/backups/comarte/
+  gdrive-crypt:comarte/backups/comarte-db-AAAA-MM-DD_HH-MM-SS.sql.gz /var/backups/comarte/
 rclone --config ~/.config/rclone/rclone.conf copy \
-  gdrive-crypt:comarte/backups/comarte-uploads-AAAA-MM-DD.tar.gz /var/backups/comarte/
+  gdrive-crypt:comarte/backups/comarte-uploads-AAAA-MM-DD_HH-MM-SS.tar.gz /var/backups/comarte/
 rclone --config ~/.config/rclone/rclone.conf copy \
-  gdrive-crypt:comarte/backups/comarte-config-AAAA-MM-DD.tar.gz.enc /var/backups/comarte/
+  gdrive-crypt:comarte/backups/comarte-config-AAAA-MM-DD_HH-MM-SS.tar.gz.enc /var/backups/comarte/
 ```
 
 Se o `lsl` lista os nomes mas o download vem corrompido, a senha do crypt está errada —
@@ -104,7 +105,7 @@ ela não falha ao listar, só ao decifrar.
 ```bash
 cd /caminho/para/backend && source .env   # PGPASSWORD
 
-gunzip -c /var/backups/comarte/comarte-db-AAAA-MM-DD.sql.gz \
+gunzip -c /var/backups/comarte/comarte-db-AAAA-MM-DD_HH-MM-SS.sql.gz \
   | docker compose exec -T -e PGPASSWORD="$DATABASE_PASSWORD" postgres \
       psql -U "$DATABASE_USERNAME" -d "$DATABASE_NAME"
 ```
@@ -115,7 +116,7 @@ Na VM os uploads ficam num volume nomeado, sem pasta equivalente no host — ext
 do container:
 
 ```bash
-gunzip -c /var/backups/comarte/comarte-uploads-AAAA-MM-DD.tar.gz \
+gunzip -c /var/backups/comarte/comarte-uploads-AAAA-MM-DD_HH-MM-SS.tar.gz \
   | docker compose exec -T strapi tar -xf - -C /app/public
 ```
 
@@ -127,7 +128,7 @@ exigindo `--force` para rodar sem prompt interativo:
 ```bash
 cd /caminho/para/backend && source .env   # STRAPI_IMPORT_ENCRYPTION_KEY
 
-docker compose cp /var/backups/comarte/comarte-config-AAAA-MM-DD.tar.gz.enc \
+docker compose cp /var/backups/comarte/comarte-config-AAAA-MM-DD_HH-MM-SS.tar.gz.enc \
   strapi:/tmp/comarte-config-restore.tar.gz.enc
 docker compose exec -T -e STRAPI_IMPORT_ENCRYPTION_KEY strapi \
   sh -c 'npm run strapi import -- -f /tmp/comarte-config-restore.tar.gz.enc --force --only config -k "$STRAPI_IMPORT_ENCRYPTION_KEY"'

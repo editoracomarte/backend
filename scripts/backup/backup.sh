@@ -78,11 +78,14 @@ RCLONE_OPTS=(
   --stats 30s
 )
 
-DATE="$(date +%F)"
-DB_FILE="${BACKUP_DIR}/comarte-db-${DATE}.sql.gz"
-UPLOADS_FILE="${BACKUP_DIR}/comarte-uploads-${DATE}.tar.gz"
-CONFIG_TMP_IN_CONTAINER="/tmp/comarte-config-${DATE}"
-CONFIG_FILE="${BACKUP_DIR}/comarte-config-${DATE}.tar.gz.enc"
+# NOW vai no nome dos arquivos (data+hora). A limpeza do Drive (etapa 7) extrai so'
+# a data de volta do nome pra agrupar/reter backups, entao varias execucoes no
+# mesmo dia contam como 1 so' pra efeito de retencao.
+NOW="$(date +'%F_%H-%M-%S')"
+DB_FILE="${BACKUP_DIR}/comarte-db-${NOW}.sql.gz"
+UPLOADS_FILE="${BACKUP_DIR}/comarte-uploads-${NOW}.tar.gz"
+CONFIG_TMP_IN_CONTAINER="/tmp/comarte-config-${NOW}"
+CONFIG_FILE="${BACKUP_DIR}/comarte-config-${NOW}.tar.gz.enc"
 
 mkdir -p "${BACKUP_DIR}" "$(dirname "${LOG_FILE}")" "$(dirname "${LOCK_FILE}")"
 exec >>"${LOG_FILE}" 2>&1
@@ -113,12 +116,11 @@ if ! flock -n 200; then
   exit 1
 fi
 
-# So' depois do lock: os nomes dos .part dependem da data, entao duas execucoes no
-# mesmo dia miram os mesmos arquivos. Registrado antes, o trap da execucao que perde
-# o lock apagaria o .part de quem esta trabalhando.
+# So' depois do lock: se duas execucoes colidissem no mesmo segundo (mesmo nome de
+# arquivo), o trap da que perde o lock apagaria o .part de quem esta trabalhando.
 trap cleanup_partials EXIT
 
-log "===== inicio do backup (${DATE}) ====="
+log "===== inicio do backup (${NOW}) ====="
 
 [ -f "${BACKUP_COMPOSE_FILE}" ] || die "compose nao encontrado: ${BACKUP_COMPOSE_FILE}"
 [ -f "${ENV_FILE}" ] || die ".env nao encontrado: ${ENV_FILE}"
@@ -205,7 +207,7 @@ t_clean_drive=${SECONDS}
 log "[limpeza-drive] mantendo os ${DRIVE_KEEP_BACKUPS} backups mais recentes em ${RCLONE_REMOTE}:${RCLONE_DEST}"
 REMOTE_FILES="$(rclone --config "${RCLONE_CONFIG}" lsf "${RCLONE_REMOTE}:${RCLONE_DEST}" --files-only)" \
   || die "[limpeza-drive] falhou ao listar ${RCLONE_REMOTE}:${RCLONE_DEST}"
-REMOTE_BACKUP_FILES="$(printf '%s\n' "${REMOTE_FILES}" | grep -E '^comarte-(db|uploads|config)-[0-9]{4}-[0-9]{2}-[0-9]{2}\.' || true)"
+REMOTE_BACKUP_FILES="$(printf '%s\n' "${REMOTE_FILES}" | grep -E '^comarte-(db|uploads|config)-[0-9]{4}-[0-9]{2}-[0-9]{2}(_[0-9]{2}-[0-9]{2}-[0-9]{2})?\.' || true)"
 if [ -z "${REMOTE_BACKUP_FILES}" ]; then
   log "[limpeza-drive] nenhum backup encontrado na listagem, nada a limpar"
 else
