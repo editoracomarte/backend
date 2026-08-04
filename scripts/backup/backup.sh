@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Backup do Com-Arte: dump do Postgres + tar dos uploads -> Google Drive (rclone).
+# Backup do Com-Arte: dump do Postgres + tar dos uploads + export de config do
+# Strapi -> Google Drive (rclone).
 # Feito para rodar via cron. Ver scripts/backup/README.md.
 #
 set -Eeuo pipefail
@@ -16,7 +17,7 @@ set -Eeuo pipefail
 PROJECT_DIR="/mnt/data/comarte/backend"
 
 # Arquivo compose. DEV: docker-compose.yml
-COMPOSE_FILE="${PROJECT_DIR}/docker-compose.prod.yml"
+BACKUP_COMPOSE_FILE="${PROJECT_DIR}/docker-compose.prod.yml"
 
 # Onde os backups ficam no disco local/VM antes (e depois) do upload.
 BACKUP_DIR="/var/backups/comarte"
@@ -36,6 +37,11 @@ UPLOADS_PATH_IN_CONTAINER="/app/public/uploads"
 
 # Retencao LOCAL em dias. O que ja subiu pro Drive nao e' tocado por isso.
 RETENTION_DAYS=90
+
+# Quantos backups (por data, nao por arquivo) ficam no Drive. Cada execucao apaga
+# os mais antigos que sobrarem. 2 = o de agora + 1 de reserva, caso o mais recente
+# saia corrompido.
+DRIVE_KEEP_BACKUPS=2
 
 # rclone: remote crypt ja configurado por fora + pasta destino dentro dele.
 RCLONE_REMOTE="gdrive-crypt"
@@ -72,9 +78,14 @@ RCLONE_OPTS=(
   --stats 30s
 )
 
-DATE="$(date +%F)"
-DB_FILE="${BACKUP_DIR}/comarte-db-${DATE}.sql.gz"
-UPLOADS_FILE="${BACKUP_DIR}/comarte-uploads-${DATE}.tar.gz"
+# NOW vai no nome dos arquivos (data+hora). A limpeza do Drive (etapa 7) extrai so'
+# a data de volta do nome pra agrupar/reter backups, entao varias execucoes no
+# mesmo dia contam como 1 so' pra efeito de retencao.
+NOW="$(date +'%F_%H-%M-%S')"
+DB_FILE="${BACKUP_DIR}/comarte-db-${NOW}.sql.gz"
+UPLOADS_FILE="${BACKUP_DIR}/comarte-uploads-${NOW}.tar.gz"
+CONFIG_TMP_IN_CONTAINER="/tmp/comarte-config-${NOW}"
+CONFIG_FILE="${BACKUP_DIR}/comarte-config-${NOW}.tar.gz.enc"
 
 mkdir -p "${BACKUP_DIR}" "$(dirname "${LOG_FILE}")" "$(dirname "${LOCK_FILE}")"
 exec >>"${LOG_FILE}" 2>&1
@@ -96,7 +107,7 @@ on_error() {
 trap on_error ERR
 
 cleanup_partials() {
-  rm -f "${DB_FILE}.part" "${UPLOADS_FILE}.part"
+  rm -f "${DB_FILE}.part" "${UPLOADS_FILE}.part" "${CONFIG_FILE}.part"
 }
 
 exec 200>"${LOCK_FILE}"
@@ -105,14 +116,13 @@ if ! flock -n 200; then
   exit 1
 fi
 
-# So' depois do lock: os nomes dos .part dependem da data, entao duas execucoes no
-# mesmo dia miram os mesmos arquivos. Registrado antes, o trap da execucao que perde
-# o lock apagaria o .part de quem esta trabalhando.
+# So' depois do lock: se duas execucoes colidissem no mesmo segundo (mesmo nome de
+# arquivo), o trap da que perde o lock apagaria o .part de quem esta trabalhando.
 trap cleanup_partials EXIT
 
-log "===== inicio do backup (${DATE}) ====="
+log "===== inicio do backup (${NOW}) ====="
 
-[ -f "${COMPOSE_FILE}" ] || die "compose nao encontrado: ${COMPOSE_FILE}"
+[ -f "${BACKUP_COMPOSE_FILE}" ] || die "compose nao encontrado: ${BACKUP_COMPOSE_FILE}"
 [ -f "${ENV_FILE}" ] || die ".env nao encontrado: ${ENV_FILE}"
 [ -f "${RCLONE_CONFIG}" ] || die "config do rclone nao encontrado: ${RCLONE_CONFIG}"
 
@@ -122,9 +132,10 @@ source "${ENV_FILE}"
 : "${DATABASE_NAME:?ausente no .env}"
 : "${DATABASE_USERNAME:?ausente no .env}"
 : "${DATABASE_PASSWORD:?ausente no .env}"
+: "${STRAPI_IMPORT_ENCRYPTION_KEY:?ausente no .env}"
 
 compose() {
-  docker compose -f "${COMPOSE_FILE}" --project-directory "${PROJECT_DIR}" "$@"
+  docker compose -f "${BACKUP_COMPOSE_FILE}" --project-directory "${PROJECT_DIR}" "$@"
 }
 
 # SECONDS e' zerado no inicio do script pelo bash; cada etapa guarda o valor de
@@ -148,23 +159,74 @@ compose exec -T "${STRAPI_SERVICE}" \
 mv "${UPLOADS_FILE}.part" "${UPLOADS_FILE}"
 log "[tar] ok: ${UPLOADS_FILE} ($(du -h "${UPLOADS_FILE}" | cut -f1)) duracao=$((SECONDS - t_tar))s"
 
-# ---------- 3. upload do banco ----------
+# ---------- 3. export enxuto de configuracao do Strapi ----------
+# So' "config": nao duplica conteudo/midia, ja cobertos pelos passos 1 e 2. Pega o
+# que nao esta nem no banco nem nos uploads, ex.: view configurada dos collection
+# types no admin (layouts do content-manager). Cifrado com a mesma chave do seed
+# (STRAPI_IMPORT_ENCRYPTION_KEY) so' por consistencia com o restante do dump — o
+# export de config nao inclui admin_users nem tokens.
+t_export=${SECONDS}
+log "[export-config] strapi export --only config via servico ${STRAPI_SERVICE}"
+compose exec -T "${STRAPI_SERVICE}" \
+  npm run strapi export -- --file "${CONFIG_TMP_IN_CONTAINER}" --only config \
+    --key "${STRAPI_IMPORT_ENCRYPTION_KEY}"
+compose exec -T "${STRAPI_SERVICE}" cat "${CONFIG_TMP_IN_CONTAINER}.tar.gz.enc" >"${CONFIG_FILE}.part"
+compose exec -T "${STRAPI_SERVICE}" rm -f "${CONFIG_TMP_IN_CONTAINER}.tar.gz.enc"
+mv "${CONFIG_FILE}.part" "${CONFIG_FILE}"
+log "[export-config] ok: ${CONFIG_FILE} ($(du -h "${CONFIG_FILE}" | cut -f1)) duracao=$((SECONDS - t_export))s"
+
+# ---------- 4. upload do banco ----------
 t_up_db=${SECONDS}
 log "[upload-db] enviando $(basename "${DB_FILE}") para ${RCLONE_REMOTE}:${RCLONE_DEST}"
 rclone "${RCLONE_OPTS[@]}" copy "${DB_FILE}" "${RCLONE_REMOTE}:${RCLONE_DEST}"
 log "[upload-db] ok duracao=$((SECONDS - t_up_db))s"
 
-# ---------- 4. upload dos uploads ----------
+# ---------- 5. upload dos uploads ----------
 t_up_uploads=${SECONDS}
 log "[upload-uploads] enviando $(basename "${UPLOADS_FILE}") para ${RCLONE_REMOTE}:${RCLONE_DEST}"
 rclone "${RCLONE_OPTS[@]}" copy "${UPLOADS_FILE}" "${RCLONE_REMOTE}:${RCLONE_DEST}"
 log "[upload-uploads] ok duracao=$((SECONDS - t_up_uploads))s"
 
-# ---------- 5. limpeza local ----------
+# ---------- 6. upload da config ----------
+t_up_config=${SECONDS}
+log "[upload-config] enviando $(basename "${CONFIG_FILE}") para ${RCLONE_REMOTE}:${RCLONE_DEST}"
+rclone "${RCLONE_OPTS[@]}" copy "${CONFIG_FILE}" "${RCLONE_REMOTE}:${RCLONE_DEST}"
+log "[upload-config] ok duracao=$((SECONDS - t_up_config))s"
+
+# ---------- 7. limpeza no Drive (mantem so' os ultimos DRIVE_KEEP_BACKUPS) ----------
+# So' roda depois dos 3 uploads terem dado certo acima (set -e): o backup novo ja
+# esta confirmado no Drive antes de qualquer coisa antiga ser apagada.
+#
+# "sort -u | tail -n N" em vez de "sort -ru | head -n N": com pipefail, o head
+# fecha o pipe assim que le' as N linhas que quer, e o sort (que so' escreve depois
+# de ler a entrada inteira) leva SIGPIPE tentando escrever o resto — o pipeline
+# inteiro morre com exit 141 mesmo sem erro nenhum. O tail precisa ler a entrada
+# inteira antes de decidir quais sao as ultimas linhas, entao nunca fecha o pipe
+# cedo e nunca gera SIGPIPE upstream.
+t_clean_drive=${SECONDS}
+log "[limpeza-drive] mantendo os ${DRIVE_KEEP_BACKUPS} backups mais recentes em ${RCLONE_REMOTE}:${RCLONE_DEST}"
+REMOTE_FILES="$(rclone --config "${RCLONE_CONFIG}" lsf "${RCLONE_REMOTE}:${RCLONE_DEST}" --files-only)" \
+  || die "[limpeza-drive] falhou ao listar ${RCLONE_REMOTE}:${RCLONE_DEST}"
+REMOTE_BACKUP_FILES="$(printf '%s\n' "${REMOTE_FILES}" | grep -E '^comarte-(db|uploads|config)-[0-9]{4}-[0-9]{2}-[0-9]{2}(_[0-9]{2}-[0-9]{2}-[0-9]{2})?\.' || true)"
+if [ -z "${REMOTE_BACKUP_FILES}" ]; then
+  log "[limpeza-drive] nenhum backup encontrado na listagem, nada a limpar"
+else
+  KEEP_DATES="$(printf '%s\n' "${REMOTE_BACKUP_FILES}" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | sort -u | tail -n "${DRIVE_KEEP_BACKUPS}")"
+  OLD_FILES="$(printf '%s\n' "${REMOTE_BACKUP_FILES}" | grep -vFf <(printf '%s\n' "${KEEP_DATES}") || true)"
+  if [ -n "${OLD_FILES}" ]; then
+    while IFS= read -r old_file; do
+      log "[limpeza-drive] removendo ${old_file}"
+      rclone "${RCLONE_OPTS[@]}" deletefile "${RCLONE_REMOTE}:${RCLONE_DEST}/${old_file}"
+    done <<<"${OLD_FILES}"
+  fi
+fi
+log "[limpeza-drive] ok duracao=$((SECONDS - t_clean_drive))s"
+
+# ---------- 8. limpeza local ----------
 t_clean=${SECONDS}
 log "[limpeza] removendo backups locais com mais de ${RETENTION_DAYS} dias"
 find "${BACKUP_DIR}" -maxdepth 1 -type f -name 'comarte-*' \
   -mtime "+${RETENTION_DAYS}" -print -delete
-log "[limpeza] ok (Drive intacto — retencao la e' manual) duracao=$((SECONDS - t_clean))s"
+log "[limpeza] ok duracao=$((SECONDS - t_clean))s"
 
 log "===== backup concluido: duracao total=${SECONDS}s ====="
