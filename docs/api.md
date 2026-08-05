@@ -399,9 +399,13 @@ No exemplo acima, `cover` sai como `{ id, documentId, url }`.
 Índice de coleções.
 
 ```bash
-curl "http://localhost:1337/api/collections?fields=name,slug" \
+curl "http://localhost:1337/api/collections?fields=name,slug,show_main_page" \
   -H "Authorization: Bearer <api-token>"
 ```
+
+`show_main_page` é a seleção manual (feita no dashboard) das coleções que devem
+aparecer na página inicial do site; filtre com
+`?filters[show_main_page][$eq]=true`.
 
 **Resposta** (um item mostrado):
 
@@ -412,7 +416,8 @@ curl "http://localhost:1337/api/collections?fields=name,slug" \
       "id": 13,
       "documentId": "lyzotp1rkcwv0h66xf6fso8s",
       "name": "Primeira Impressão",
-      "slug": "primeira-impressao"
+      "slug": "primeira-impressao",
+      "show_main_page": true
     }
   ],
   "meta": {
