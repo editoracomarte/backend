@@ -47,13 +47,13 @@ Draft & publish: **ativado**.
 
 Rota base `/api/collections`.
 
-| Campo             | Tipo                 | Observações                                             |
-| ----------------- | -------------------- | -------------------------------------------------------- |
-| `name`            | string (obrigatório) |                                                          |
-| `slug`            | uid (obrigatório)    | Gerado a partir de `name`                                |
-| `description`     | richtext             |                                                          |
-| `books`           | relation manyToMany  | → `book`                                                 |
-| `show_main_page`  | boolean              | Seleção manual (dashboard) das coleções exibidas na home |
+| Campo            | Tipo                 | Observações                                              |
+| ---------------- | -------------------- | -------------------------------------------------------- |
+| `name`           | string (obrigatório) |                                                          |
+| `slug`           | uid (obrigatório)    | Gerado a partir de `name`                                |
+| `description`    | richtext             |                                                          |
+| `books`          | relation manyToMany  | → `book`                                                 |
+| `show_main_page` | boolean              | Seleção manual (dashboard) das coleções exibidas na home |
 
 Draft & publish: **ativado**.
 

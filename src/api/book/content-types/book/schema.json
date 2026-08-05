@@ -64,17 +64,12 @@
       "type": "media",
       "multiple": false,
       "required": true,
-      "allowedTypes": [
-        "images",
-        "files"
-      ]
+      "allowedTypes": ["images", "files"]
     },
     "sample": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": [
-        "files"
-      ]
+      "allowedTypes": ["files"]
     }
   }
 }
