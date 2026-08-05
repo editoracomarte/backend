@@ -28,6 +28,9 @@
     },
     "description": {
       "type": "blocks"
+    },
+    "show_main_page": {
+      "type": "boolean"
     }
   }
 }
